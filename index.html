@@ -13,16 +13,23 @@
     :root{
       --bg:#f6f7fb; --card:#fff; --text:#1f2937; --muted:#6b7280;
       --line:#e5e7eb; --blue:#2563eb; --green:#16a34a; --amber:#d97706; --red:#dc2626; --purple:#7c3aed;
+      --slate:#334155;
     }
     body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);}
-    .wrap{max-width:1100px;margin:24px auto;padding:0 16px;}
+    .wrap{max-width:1200px;margin:24px auto;padding:0 16px;}
     .card{background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 1px 2px rgba(0,0,0,.04);}
-    header{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:16px 16px 8px;}
+    header{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;padding:16px 16px 8px;}
     header h1{font-size:18px;margin:0;}
-    .sub{padding:0 16px 16px;color:var(--muted);font-size:13px;}
-    .toolbar{display:flex;gap:12px;align-items:center;}
+    .toolbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
     input[type="search"]{padding:10px 12px;border:1px solid var(--line);border-radius:10px;min-width:260px;}
-
+    .sub{padding:0 16px 16px;color:var(--muted);font-size:13px;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;}
+    .kpis{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+    .kpi{
+      display:inline-flex;align-items:baseline;gap:10px;
+      padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:#fafafa;
+      font-size:12px;color:var(--muted);
+    }
+    .kpi b{color:var(--text);font-size:14px;}
     table{width:100%;border-collapse:separate;border-spacing:0;}
     thead th{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);text-align:left;
       padding:10px 12px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:#fafafa;
@@ -34,7 +41,6 @@
     .right{text-align:right;}
     a{color:var(--blue);text-decoration:none;}
     a:hover{text-decoration:underline;}
-
     .pill{
       display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;
       font-size:12px;font-weight:600;border:1px solid transparent;white-space:nowrap;
@@ -53,11 +59,36 @@
       margin-left:8px;
     }
 
+    /* dunning */
+    .dunning{
+      display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;
+    }
+    .tag{
+      display:inline-flex;align-items:center;gap:6px;
+      padding:4px 8px;border-radius:999px;
+      font-size:12px;font-weight:600;
+      color:var(--slate); background:#f8fafc; border:1px solid var(--line);
+      white-space:nowrap;
+    }
+    .tag.dunning-on{color:var(--red); background:rgba(220,38,38,.08); border-color:rgba(220,38,38,.18);}
+    .tag.dunning-off{color:var(--muted); background:#f9fafb; border-color:var(--line);}
+    .tag.level{color:var(--slate);}
+
     details summary{cursor:pointer;color:var(--blue);font-size:13px;}
     .tx{ margin-top:8px;border:1px solid var(--line);border-radius:10px;overflow:hidden; }
     .tx table{width:100%;}
     .tx thead th{background:#fff;border-top:none;}
     .muted{color:var(--muted);}
+
+    /* tabs */
+    .tabs{display:flex;gap:8px;align-items:center;}
+    .tabbtn{
+      border:1px solid var(--line);background:#fff;color:var(--text);
+      padding:8px 10px;border-radius:10px;font-size:13px;cursor:pointer;
+    }
+    .tabbtn.active{border-color:rgba(37,99,235,.35);box-shadow:0 0 0 3px rgba(37,99,235,.10);}
+    .tabpanel{padding:0 16px 16px;}
+    .hidden{display:none;}
   
 
 							</style>
@@ -73,16 +104,23 @@
     :root{
       --bg:#f6f7fb; --card:#fff; --text:#1f2937; --muted:#6b7280;
       --line:#e5e7eb; --blue:#2563eb; --green:#16a34a; --amber:#d97706; --red:#dc2626; --purple:#7c3aed;
+      --slate:#334155;
     }
     body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);}
-    .wrap{max-width:1100px;margin:24px auto;padding:0 16px;}
+    .wrap{max-width:1200px;margin:24px auto;padding:0 16px;}
     .card{background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 1px 2px rgba(0,0,0,.04);}
-    header{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:16px 16px 8px;}
+    header{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;padding:16px 16px 8px;}
     header h1{font-size:18px;margin:0;}
-    .sub{padding:0 16px 16px;color:var(--muted);font-size:13px;}
-    .toolbar{display:flex;gap:12px;align-items:center;}
+    .toolbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
     input[type="search"]{padding:10px 12px;border:1px solid var(--line);border-radius:10px;min-width:260px;}
-
+    .sub{padding:0 16px 16px;color:var(--muted);font-size:13px;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;}
+    .kpis{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+    .kpi{
+      display:inline-flex;align-items:baseline;gap:10px;
+      padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:#fafafa;
+      font-size:12px;color:var(--muted);
+    }
+    .kpi b{color:var(--text);font-size:14px;}
     table{width:100%;border-collapse:separate;border-spacing:0;}
     thead th{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);text-align:left;
       padding:10px 12px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:#fafafa;
@@ -94,7 +132,6 @@
     .right{text-align:right;}
     a{color:var(--blue);text-decoration:none;}
     a:hover{text-decoration:underline;}
-
     .pill{
       display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;
       font-size:12px;font-weight:600;border:1px solid transparent;white-space:nowrap;
@@ -113,157 +150,363 @@
       margin-left:8px;
     }
 
+    /* dunning */
+    .dunning{
+      display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;
+    }
+    .tag{
+      display:inline-flex;align-items:center;gap:6px;
+      padding:4px 8px;border-radius:999px;
+      font-size:12px;font-weight:600;
+      color:var(--slate); background:#f8fafc; border:1px solid var(--line);
+      white-space:nowrap;
+    }
+    .tag.dunning-on{color:var(--red); background:rgba(220,38,38,.08); border-color:rgba(220,38,38,.18);}
+    .tag.dunning-off{color:var(--muted); background:#f9fafb; border-color:var(--line);}
+    .tag.level{color:var(--slate);}
+
     details summary{cursor:pointer;color:var(--blue);font-size:13px;}
     .tx{ margin-top:8px;border:1px solid var(--line);border-radius:10px;overflow:hidden; }
     .tx table{width:100%;}
     .tx thead th{background:#fff;border-top:none;}
     .muted{color:var(--muted);}
+
+    /* tabs */
+    .tabs{display:flex;gap:8px;align-items:center;}
+    .tabbtn{
+      border:1px solid var(--line);background:#fff;color:var(--text);
+      padding:8px 10px;border-radius:10px;font-size:13px;cursor:pointer;
+    }
+    .tabbtn.active{border-color:rgba(37,99,235,.35);box-shadow:0 0 0 3px rgba(37,99,235,.10);}
+    .tabpanel{padding:0 16px 16px;}
+    .hidden{display:none;}
   </style>
 </head>
 <body>
   <div class="wrap">
+
     <div class="card">
       <header>
         <div>
           <h1>Facturen</h1>
-          <div class="muted" style="font-size:13px;">Demo: factuurregels met status, betalingsregeling en gekoppelde transacties</div>
+          <div class="muted" style="font-size:13px;">
+            Demo: factuurregels met status, dunning en gekoppelde transacties + betalingsregeling-tab
+          </div>
         </div>
+
         <div class="toolbar">
-          <input id="q" type="search" placeholder="Zoek op factuurnr…" />
+          <div class="tabs" role="tablist" aria-label="Overzicht tabs">
+            <button class="tabbtn active" id="tab-invoices" data-tab="invoices" role="tab" aria-selected="true">Facturen</button>
+            <button class="tabbtn" id="tab-plans" data-tab="plans" role="tab" aria-selected="false">Betalingsregelingen</button>
+          </div>
+          <input id="q" type="search" placeholder="Zoek op factuurnr of plan…" />
         </div>
       </header>
-      <div class="sub">Statusvolgorde: Aangekondigd → In behandeling → Afgewezen → Betaald</div>
 
-      <table>
-        <thead>
-          <tr>
-            <th style="width:200px;">Factuur</th>
-            <th style="width:120px;">Factuurdatum</th>
-            <th style="width:120px;">Vervaldatum</th>
-            <th class="right" style="width:120px;">Bedrag</th>
-            <th style="width:220px;">Status</th>
-            <th>Transacties</th>
-          </tr>
-        </thead>
-        <tbody id="rows"></tbody>
-      </table>
+      <div class="sub">
+        <div>Statusvolgorde: Aangekondigd → In behandeling → Afgewezen → Betaald</div>
+        <div class="kpis">
+          <div class="kpi"><span>Totaal openstaand</span><b id="openTotal">€ 0,00</b></div>
+        </div>
+      </div>
+
+      <!-- TAB: FACTUREN -->
+      <div id="panel-invoices" class="tabpanel">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:200px;">Factuur</th>
+              <th style="width:120px;">Factuurdatum</th>
+              <th style="width:120px;">Vervaldatum</th>
+              <th class="right" style="width:120px;">Bedrag</th>
+              <th style="width:220px;">Status</th>
+              <th style="width:240px;">Dunning</th>
+              <th>Transacties</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+
+      <!-- TAB: BETALINGSREGELINGEN -->
+      <div id="panel-plans" class="tabpanel hidden">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:200px;">Plan</th>
+              <th style="width:200px;">Factuur</th>
+              <th style="width:140px;">Status</th>
+              <th class="right" style="width:140px;">Totaal</th>
+              <th>Termijnen & afschrijvingen</th>
+            </tr>
+          </thead>
+          <tbody id="planRows"></tbody>
+        </table>
+      </div>
+
     </div>
   </div>
 
 <script>
-// gewenste volgorde
-const STATUS_ORDER = ["announced","processing","rejected","paid"];
-const STATUS_LABEL = {
-  announced: "Aangekondigd",
-  processing: "In behandeling",
-  rejected: "Afgewezen",
-  paid: "Betaald"
-};
+  // gewenste volgorde
+  const STATUS_ORDER = ["announced","processing","rejected","paid"];
+  const STATUS_LABEL = {
+    announced: "Aangekondigd",
+    processing: "In behandeling",
+    rejected: "Afgewezen",
+    paid: "Betaald"
+  };
 
-// Mock facturen (alleen invoices)
-const invoices = [
-  {id:"901617100120", docDate:"2026-01-06", dueDate:"2026-01-28", amount:135.69, status:"paid", paymentPlan:false},
-  {id:"901606243302", docDate:"2025-10-07", dueDate:"2025-10-29", amount:146.53, status:"processing", paymentPlan:true},
-  {id:"901593944807", docDate:"2025-07-11", dueDate:"2025-09-02", amount:135.73, status:"announced", paymentPlan:false},
-  {id:"901590998875", docDate:"2025-05-08", dueDate:"2025-05-30", amount:135.42, status:"rejected", paymentPlan:true},
-];
+  // Mock facturen (alleen invoices)
+  // - paymentPlan badge op processing is verwijderd (invoice 901606243302 heeft nu paymentPlan:false)
+  // - dunningMode + dunningLevel toegevoegd
+  const invoices = [
+    {id:"901617100120", docDate:"2026-01-06", dueDate:"2026-01-28", amount:135.69, status:"paid",      paymentPlan:false, dunningMode:"off", dunningLevel:0},
+    {id:"901606243302", docDate:"2025-10-07", dueDate:"2025-10-29", amount:146.53, status:"processing",paymentPlan:false, dunningMode:"on",  dunningLevel:1},
+    {id:"901593944807", docDate:"2025-07-11", dueDate:"2025-09-02", amount:135.73, status:"announced", paymentPlan:false, dunningMode:"off", dunningLevel:0},
+    {id:"901590998875", docDate:"2025-05-08", dueDate:"2025-05-30", amount:135.42, status:"rejected",  paymentPlan:true,  dunningMode:"on",  dunningLevel:2},
+  ];
 
-// transacties per factuur (simpel)
-const transactionsByInvoice = {
-  "901617100120": [
-    {doc:"501536377686", date:"2026-01-22", type:"Direct Debit", amount:-135.69, result:"Matched"}
-  ],
-  "901606243302": [
-    {doc:"PLAN-3302", date:"2025-10-10", type:"Payment plan created", amount:0.00, result:"Active"},
-    {doc:"DD-3302", date:"2025-10-25", type:"Direct Debit", amount:-146.53, result:"Pending"}
-  ],
-  "901593944807": [
-    {doc:"PREN-4807", date:"2025-07-20", type:"Pre-notification", amount:0.00, result:"Announced"}
-  ],
-  "901590998875": [
-    {doc:"PLAN-8875", date:"2025-05-09", type:"Payment plan created", amount:0.00, result:"Active"},
-    {doc:"RJ-8875", date:"2025-05-12", type:"Direct Debit", amount:-135.42, result:"Rejected (R-code)"}
-  ]
-};
+  // Betalingsregelingen (los overzicht; doorklikken opent tab)
+  const paymentPlans = [
+    {
+      id:"PLAN-8875",
+      invoiceId:"901590998875",
+      status:"Active",
+      total:135.42,
+      schedule:[
+        {term:1, dueDate:"2025-05-20", amount:45.14, method:"Direct Debit", doc:"DD-8875-01", result:"Rejected"},
+        {term:2, dueDate:"2025-06-20", amount:45.14, method:"Direct Debit", doc:"DD-8875-02", result:"Scheduled"},
+        {term:3, dueDate:"2025-07-20", amount:45.14, method:"Direct Debit", doc:"DD-8875-03", result:"Scheduled"},
+      ]
+    }
+    // NB: je kunt hier extra plannen toevoegen (bijv. voor 901606243302) als je dat wilt.
+  ];
 
-const euro = n => (n<0?"-":"") + "€ " + Math.abs(n).toFixed(2).replace(".", ",");
-const fmtDate = d => d.split("-").reverse().join("-");
+  // transacties per factuur (simpel)
+  const transactionsByInvoice = {
+    "901617100120": [
+      {doc:"501536377686", date:"2026-01-22", type:"Direct Debit", amount:-135.69, result:"Matched"}
+    ],
+    "901606243302": [
+      {doc:"DD-3302", date:"2025-10-25", type:"Direct Debit", amount:-146.53, result:"Pending"}
+    ],
+    "901593944807": [
+      {doc:"PREN-4807", date:"2025-07-20", type:"Pre-notification", amount:0.00, result:"Announced"}
+    ],
+    "901590998875": [
+      {doc:"PLAN-8875", date:"2025-05-09", type:"Payment plan created", amount:0.00, result:"Active"},
+      {doc:"RJ-8875", date:"2025-05-12", type:"Direct Debit", amount:-135.42, result:"Rejected (R-code)"}
+    ]
+  };
 
-function statusPill(statusKey){
-  const label = STATUS_LABEL[statusKey] ?? statusKey;
-  return `<span class="pill ${statusKey}"><span class="dot"></span>${label}</span>`;
-}
+  const euro = n => (n<0?"-":"") + "€ " + Math.abs(n).toFixed(2).replace(".", ",");
+  const fmtDate = d => d.split("-").reverse().join("-");
 
-function txTable(invoiceId){
-  const txs = transactionsByInvoice[invoiceId] || [];
-  if(!txs.length) return `<div class="muted">Geen transacties.</div>`;
+  function statusPill(statusKey){
+    const label = STATUS_LABEL[statusKey] ?? statusKey;
+    return `<span class="pill ${statusKey}"><span class="dot"></span>${label}</span>`;
+  }
 
-  return `
-    <div class="tx">
-      <table>
-        <thead>
-          <tr>
-            <th style="width:160px;">Transactie</th>
-            <th style="width:120px;">Datum</th>
-            <th style="width:220px;">Type</th>
-            <th class="right" style="width:120px;">Bedrag</th>
-            <th>Resultaat</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${txs.map(t=>`
+  function dunningCell(inv){
+    const modeOn = (inv.dunningMode === "on");
+    const level = Number(inv.dunningLevel ?? 0);
+    return `
+      <div class="dunning">
+        <span class="tag ${modeOn ? "dunning-on" : "dunning-off"}">Dunning: ${modeOn ? "Aan" : "Uit"}</span>
+        <span class="tag level">Level: ${level}</span>
+      </div>
+    `;
+  }
+
+  function txTable(invoiceId){
+    const txs = transactionsByInvoice[invoiceId] || [];
+    if(!txs.length) return `<div class="muted">Geen transacties.</div>`;
+    return `
+      <div class="tx">
+        <table>
+          <thead>
             <tr>
-              <td class="mono">${t.doc}</td>
-              <td>${fmtDate(t.date)}</td>
-              <td>${t.type}</td>
-              <td class="right mono amount">${euro(t.amount)}</td>
-              <td>${t.result}</td>
+              <th style="width:160px;">Transactie</th>
+              <th style="width:120px;">Datum</th>
+              <th style="width:220px;">Type</th>
+              <th class="right" style="width:120px;">Bedrag</th>
+              <th>Resultaat</th>
             </tr>
-          `).join("")}
-        </tbody>
-      </table>
-    </div>
-  `;
-}
+          </thead>
+          <tbody>
+            ${txs.map(t=>`
+              <tr>
+                <td class="mono">${t.doc}</td>
+                <td>${fmtDate(t.date)}</td>
+                <td>${t.type}</td>
+                <td class="right mono amount">${euro(t.amount)}</td>
+                <td>${t.result}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
 
-function sortInvoices(list){
-  return [...list].sort((a,b) => {
-    const sa = STATUS_ORDER.indexOf(a.status);
-    const sb = STATUS_ORDER.indexOf(b.status);
-    if(sa !== sb) return sa - sb;                 // status-volgorde
-    return (b.docDate).localeCompare(a.docDate);  // binnen status: nieuwste eerst
+  function sortInvoices(list){
+    return [...list].sort((a,b) => {
+      const sa = STATUS_ORDER.indexOf(a.status);
+      const sb = STATUS_ORDER.indexOf(b.status);
+      if(sa !== sb) return sa - sb;                 // status-volgorde
+      return (b.docDate).localeCompare(a.docDate);  // binnen status: nieuwste eerst
+    });
+  }
+
+  function isOpen(inv){
+    // open = niet betaald
+    return inv.status !== "paid";
+  }
+
+  function computeOpenTotal(list){
+    return list.reduce((sum, inv) => sum + (isOpen(inv) ? inv.amount : 0), 0);
+  }
+
+  function planByInvoiceId(invoiceId){
+    return paymentPlans.find(p => p.invoiceId === invoiceId);
+  }
+
+  function openPlansTab(planId){
+    setActiveTab("plans");
+    if(planId){
+      const el = document.getElementById(`plan-${planId}`);
+      if(el) el.scrollIntoView({behavior:"smooth", block:"center"});
+    }
+  }
+  window.openPlansTab = openPlansTab;
+
+  function renderInvoices(list){
+    const sorted = sortInvoices(list);
+    document.getElementById("rows").innerHTML = sorted.map(inv => {
+      const plan = planByInvoiceId(inv.id);
+      return `
+        <tr>
+          <td class="mono">
+            <a href="#inv-${inv.id}" title="Factuur">${inv.id}</a>
+            ${
+              inv.paymentPlan && plan
+                ? `<a href="javascript:void(0)" class="badge" onclick="openPlansTab('${plan.id}')" title="Bekijk betalingsregeling">Betalingsregeling</a>`
+                : ``
+            }
+          </td>
+          <td>${fmtDate(inv.docDate)}</td>
+          <td>${fmtDate(inv.dueDate)}</td>
+          <td class="right mono amount">${euro(inv.amount)}</td>
+          <td>${statusPill(inv.status)}</td>
+          <td>${dunningCell(inv)}</td>
+          <td>
+            <details>
+              <summary>Transacties</summary>
+              ${txTable(inv.id)}
+            </details>
+          </td>
+        </tr>
+      `;
+    }).join("");
+
+    document.getElementById("openTotal").textContent = euro(computeOpenTotal(list));
+  }
+
+  function scheduleTable(plan){
+    return `
+      <div class="tx">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:90px;">Termijn</th>
+              <th style="width:120px;">Vervaldatum</th>
+              <th style="width:160px;">Methode</th>
+              <th style="width:160px;">Afschrijving</th>
+              <th class="right" style="width:120px;">Bedrag</th>
+              <th>Resultaat</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${plan.schedule.map(s => `
+              <tr>
+                <td class="mono">${s.term}</td>
+                <td>${fmtDate(s.dueDate)}</td>
+                <td>${s.method}</td>
+                <td class="mono">${s.doc}</td>
+                <td class="right mono amount">${euro(-Math.abs(s.amount))}</td>
+                <td>${s.result}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  function renderPlans(filterText){
+    const q = (filterText ?? "").trim().toLowerCase();
+    const filtered = paymentPlans.filter(p =>
+      p.id.toLowerCase().includes(q) || p.invoiceId.toLowerCase().includes(q)
+    );
+
+    document.getElementById("planRows").innerHTML = filtered.map(plan => `
+      <tr id="plan-${plan.id}">
+        <td class="mono"><a href="#plan-${plan.id}" title="Plan">${plan.id}</a></td>
+        <td class="mono"><a href="#inv-${plan.invoiceId}" title="Factuur">${plan.invoiceId}</a></td>
+        <td>${plan.status}</td>
+        <td class="right mono amount">${euro(plan.total)}</td>
+        <td>
+          <details open>
+            <summary>Termijnen</summary>
+            ${scheduleTable(plan)}
+          </details>
+        </td>
+      </tr>
+    `).join("");
+
+    // open total blijft gebaseerd op facturen-tab (niet op plannen)
+    document.getElementById("openTotal").textContent = euro(computeOpenTotal(invoices));
+  }
+
+  function setActiveTab(tab){
+    const btnInv = document.getElementById("tab-invoices");
+    const btnPlans = document.getElementById("tab-plans");
+    const pInv = document.getElementById("panel-invoices");
+    const pPlans = document.getElementById("panel-plans");
+
+    const isInv = tab === "invoices";
+    btnInv.classList.toggle("active", isInv);
+    btnPlans.classList.toggle("active", !isInv);
+    btnInv.setAttribute("aria-selected", isInv ? "true" : "false");
+    btnPlans.setAttribute("aria-selected", !isInv ? "true" : "false");
+
+    pInv.classList.toggle("hidden", !isInv);
+    pPlans.classList.toggle("hidden", isInv);
+
+    // re-render met huidige filter in juiste tab
+    const q = document.getElementById("q").value;
+    if(isInv) applyFilterInvoices(q);
+    else renderPlans(q);
+  }
+
+  function applyFilterInvoices(filterText){
+    const q = (filterText ?? "").trim().toLowerCase();
+    renderInvoices(invoices.filter(inv => inv.id.toLowerCase().includes(q)));
+  }
+
+  // events
+  document.getElementById("q").addEventListener("input", (e) => {
+    const activePlans = !document.getElementById("panel-plans").classList.contains("hidden");
+    if(activePlans) renderPlans(e.target.value);
+    else applyFilterInvoices(e.target.value);
   });
-}
 
-function render(list){
-  const sorted = sortInvoices(list);
-  document.getElementById("rows").innerHTML = sorted.map(inv => `
-    <tr>
-      <td class="mono">
-        <a href="#inv-${inv.id}" title="Factuur">${inv.id}</a>
-        ${inv.paymentPlan ? `<span class="badge">Betalingsregeling</span>` : ``}
-      </td>
-      <td>${fmtDate(inv.docDate)}</td>
-      <td>${fmtDate(inv.dueDate)}</td>
-      <td class="right mono amount">${euro(inv.amount)}</td>
-      <td>${statusPill(inv.status)}</td>
-      <td>
-        <details>
-          <summary>Transacties</summary>
-          ${txTable(inv.id)}
-        </details>
-      </td>
-    </tr>
-  `).join("");
-}
+  document.getElementById("tab-invoices").addEventListener("click", () => setActiveTab("invoices"));
+  document.getElementById("tab-plans").addEventListener("click", () => setActiveTab("plans"));
 
-function applyFilter(){
-  const q = document.getElementById("q").value.trim().toLowerCase();
-  render(invoices.filter(inv => inv.id.toLowerCase().includes(q)));
-}
-
-document.getElementById("q").addEventListener("input", applyFilter);
-applyFilter();
+  // init
+  setActiveTab("invoices");
 </script>
 </body>
 </html>
@@ -272,119 +515,265 @@ applyFilter();
 
 							<script>
                             	
-// gewenste volgorde
-const STATUS_ORDER = ["announced","processing","rejected","paid"];
-const STATUS_LABEL = {
-  announced: "Aangekondigd",
-  processing: "In behandeling",
-  rejected: "Afgewezen",
-  paid: "Betaald"
-};
+  // gewenste volgorde
+  const STATUS_ORDER = ["announced","processing","rejected","paid"];
+  const STATUS_LABEL = {
+    announced: "Aangekondigd",
+    processing: "In behandeling",
+    rejected: "Afgewezen",
+    paid: "Betaald"
+  };
 
-// Mock facturen (alleen invoices)
-const invoices = [
-  {id:"901617100120", docDate:"2026-01-06", dueDate:"2026-01-28", amount:135.69, status:"paid", paymentPlan:false},
-  {id:"901606243302", docDate:"2025-10-07", dueDate:"2025-10-29", amount:146.53, status:"processing", paymentPlan:true},
-  {id:"901593944807", docDate:"2025-07-11", dueDate:"2025-09-02", amount:135.73, status:"announced", paymentPlan:false},
-  {id:"901590998875", docDate:"2025-05-08", dueDate:"2025-05-30", amount:135.42, status:"rejected", paymentPlan:true},
-];
+  // Mock facturen (alleen invoices)
+  // - paymentPlan badge op processing is verwijderd (invoice 901606243302 heeft nu paymentPlan:false)
+  // - dunningMode + dunningLevel toegevoegd
+  const invoices = [
+    {id:"901617100120", docDate:"2026-01-06", dueDate:"2026-01-28", amount:135.69, status:"paid",      paymentPlan:false, dunningMode:"off", dunningLevel:0},
+    {id:"901606243302", docDate:"2025-10-07", dueDate:"2025-10-29", amount:146.53, status:"processing",paymentPlan:false, dunningMode:"on",  dunningLevel:1},
+    {id:"901593944807", docDate:"2025-07-11", dueDate:"2025-09-02", amount:135.73, status:"announced", paymentPlan:false, dunningMode:"off", dunningLevel:0},
+    {id:"901590998875", docDate:"2025-05-08", dueDate:"2025-05-30", amount:135.42, status:"rejected",  paymentPlan:true,  dunningMode:"on",  dunningLevel:2},
+  ];
 
-// transacties per factuur (simpel)
-const transactionsByInvoice = {
-  "901617100120": [
-    {doc:"501536377686", date:"2026-01-22", type:"Direct Debit", amount:-135.69, result:"Matched"}
-  ],
-  "901606243302": [
-    {doc:"PLAN-3302", date:"2025-10-10", type:"Payment plan created", amount:0.00, result:"Active"},
-    {doc:"DD-3302", date:"2025-10-25", type:"Direct Debit", amount:-146.53, result:"Pending"}
-  ],
-  "901593944807": [
-    {doc:"PREN-4807", date:"2025-07-20", type:"Pre-notification", amount:0.00, result:"Announced"}
-  ],
-  "901590998875": [
-    {doc:"PLAN-8875", date:"2025-05-09", type:"Payment plan created", amount:0.00, result:"Active"},
-    {doc:"RJ-8875", date:"2025-05-12", type:"Direct Debit", amount:-135.42, result:"Rejected (R-code)"}
-  ]
-};
+  // Betalingsregelingen (los overzicht; doorklikken opent tab)
+  const paymentPlans = [
+    {
+      id:"PLAN-8875",
+      invoiceId:"901590998875",
+      status:"Active",
+      total:135.42,
+      schedule:[
+        {term:1, dueDate:"2025-05-20", amount:45.14, method:"Direct Debit", doc:"DD-8875-01", result:"Rejected"},
+        {term:2, dueDate:"2025-06-20", amount:45.14, method:"Direct Debit", doc:"DD-8875-02", result:"Scheduled"},
+        {term:3, dueDate:"2025-07-20", amount:45.14, method:"Direct Debit", doc:"DD-8875-03", result:"Scheduled"},
+      ]
+    }
+    // NB: je kunt hier extra plannen toevoegen (bijv. voor 901606243302) als je dat wilt.
+  ];
 
-const euro = n => (n<0?"-":"") + "€ " + Math.abs(n).toFixed(2).replace(".", ",");
-const fmtDate = d => d.split("-").reverse().join("-");
+  // transacties per factuur (simpel)
+  const transactionsByInvoice = {
+    "901617100120": [
+      {doc:"501536377686", date:"2026-01-22", type:"Direct Debit", amount:-135.69, result:"Matched"}
+    ],
+    "901606243302": [
+      {doc:"DD-3302", date:"2025-10-25", type:"Direct Debit", amount:-146.53, result:"Pending"}
+    ],
+    "901593944807": [
+      {doc:"PREN-4807", date:"2025-07-20", type:"Pre-notification", amount:0.00, result:"Announced"}
+    ],
+    "901590998875": [
+      {doc:"PLAN-8875", date:"2025-05-09", type:"Payment plan created", amount:0.00, result:"Active"},
+      {doc:"RJ-8875", date:"2025-05-12", type:"Direct Debit", amount:-135.42, result:"Rejected (R-code)"}
+    ]
+  };
 
-function statusPill(statusKey){
-  const label = STATUS_LABEL[statusKey] ?? statusKey;
-  return `<span class="pill ${statusKey}"><span class="dot"></span>${label}</span>`;
-}
+  const euro = n => (n<0?"-":"") + "€ " + Math.abs(n).toFixed(2).replace(".", ",");
+  const fmtDate = d => d.split("-").reverse().join("-");
 
-function txTable(invoiceId){
-  const txs = transactionsByInvoice[invoiceId] || [];
-  if(!txs.length) return `<div class="muted">Geen transacties.</div>`;
+  function statusPill(statusKey){
+    const label = STATUS_LABEL[statusKey] ?? statusKey;
+    return `<span class="pill ${statusKey}"><span class="dot"></span>${label}</span>`;
+  }
 
-  return `
-    <div class="tx">
-      <table>
-        <thead>
-          <tr>
-            <th style="width:160px;">Transactie</th>
-            <th style="width:120px;">Datum</th>
-            <th style="width:220px;">Type</th>
-            <th class="right" style="width:120px;">Bedrag</th>
-            <th>Resultaat</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${txs.map(t=>`
+  function dunningCell(inv){
+    const modeOn = (inv.dunningMode === "on");
+    const level = Number(inv.dunningLevel ?? 0);
+    return `
+      <div class="dunning">
+        <span class="tag ${modeOn ? "dunning-on" : "dunning-off"}">Dunning: ${modeOn ? "Aan" : "Uit"}</span>
+        <span class="tag level">Level: ${level}</span>
+      </div>
+    `;
+  }
+
+  function txTable(invoiceId){
+    const txs = transactionsByInvoice[invoiceId] || [];
+    if(!txs.length) return `<div class="muted">Geen transacties.</div>`;
+    return `
+      <div class="tx">
+        <table>
+          <thead>
             <tr>
-              <td class="mono">${t.doc}</td>
-              <td>${fmtDate(t.date)}</td>
-              <td>${t.type}</td>
-              <td class="right mono amount">${euro(t.amount)}</td>
-              <td>${t.result}</td>
+              <th style="width:160px;">Transactie</th>
+              <th style="width:120px;">Datum</th>
+              <th style="width:220px;">Type</th>
+              <th class="right" style="width:120px;">Bedrag</th>
+              <th>Resultaat</th>
             </tr>
-          `).join("")}
-        </tbody>
-      </table>
-    </div>
-  `;
-}
+          </thead>
+          <tbody>
+            ${txs.map(t=>`
+              <tr>
+                <td class="mono">${t.doc}</td>
+                <td>${fmtDate(t.date)}</td>
+                <td>${t.type}</td>
+                <td class="right mono amount">${euro(t.amount)}</td>
+                <td>${t.result}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
 
-function sortInvoices(list){
-  return [...list].sort((a,b) => {
-    const sa = STATUS_ORDER.indexOf(a.status);
-    const sb = STATUS_ORDER.indexOf(b.status);
-    if(sa !== sb) return sa - sb;                 // status-volgorde
-    return (b.docDate).localeCompare(a.docDate);  // binnen status: nieuwste eerst
+  function sortInvoices(list){
+    return [...list].sort((a,b) => {
+      const sa = STATUS_ORDER.indexOf(a.status);
+      const sb = STATUS_ORDER.indexOf(b.status);
+      if(sa !== sb) return sa - sb;                 // status-volgorde
+      return (b.docDate).localeCompare(a.docDate);  // binnen status: nieuwste eerst
+    });
+  }
+
+  function isOpen(inv){
+    // open = niet betaald
+    return inv.status !== "paid";
+  }
+
+  function computeOpenTotal(list){
+    return list.reduce((sum, inv) => sum + (isOpen(inv) ? inv.amount : 0), 0);
+  }
+
+  function planByInvoiceId(invoiceId){
+    return paymentPlans.find(p => p.invoiceId === invoiceId);
+  }
+
+  function openPlansTab(planId){
+    setActiveTab("plans");
+    if(planId){
+      const el = document.getElementById(`plan-${planId}`);
+      if(el) el.scrollIntoView({behavior:"smooth", block:"center"});
+    }
+  }
+  window.openPlansTab = openPlansTab;
+
+  function renderInvoices(list){
+    const sorted = sortInvoices(list);
+    document.getElementById("rows").innerHTML = sorted.map(inv => {
+      const plan = planByInvoiceId(inv.id);
+      return `
+        <tr>
+          <td class="mono">
+            <a href="#inv-${inv.id}" title="Factuur">${inv.id}</a>
+            ${
+              inv.paymentPlan && plan
+                ? `<a href="javascript:void(0)" class="badge" onclick="openPlansTab('${plan.id}')" title="Bekijk betalingsregeling">Betalingsregeling</a>`
+                : ``
+            }
+          </td>
+          <td>${fmtDate(inv.docDate)}</td>
+          <td>${fmtDate(inv.dueDate)}</td>
+          <td class="right mono amount">${euro(inv.amount)}</td>
+          <td>${statusPill(inv.status)}</td>
+          <td>${dunningCell(inv)}</td>
+          <td>
+            <details>
+              <summary>Transacties</summary>
+              ${txTable(inv.id)}
+            </details>
+          </td>
+        </tr>
+      `;
+    }).join("");
+
+    document.getElementById("openTotal").textContent = euro(computeOpenTotal(list));
+  }
+
+  function scheduleTable(plan){
+    return `
+      <div class="tx">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:90px;">Termijn</th>
+              <th style="width:120px;">Vervaldatum</th>
+              <th style="width:160px;">Methode</th>
+              <th style="width:160px;">Afschrijving</th>
+              <th class="right" style="width:120px;">Bedrag</th>
+              <th>Resultaat</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${plan.schedule.map(s => `
+              <tr>
+                <td class="mono">${s.term}</td>
+                <td>${fmtDate(s.dueDate)}</td>
+                <td>${s.method}</td>
+                <td class="mono">${s.doc}</td>
+                <td class="right mono amount">${euro(-Math.abs(s.amount))}</td>
+                <td>${s.result}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  function renderPlans(filterText){
+    const q = (filterText ?? "").trim().toLowerCase();
+    const filtered = paymentPlans.filter(p =>
+      p.id.toLowerCase().includes(q) || p.invoiceId.toLowerCase().includes(q)
+    );
+
+    document.getElementById("planRows").innerHTML = filtered.map(plan => `
+      <tr id="plan-${plan.id}">
+        <td class="mono"><a href="#plan-${plan.id}" title="Plan">${plan.id}</a></td>
+        <td class="mono"><a href="#inv-${plan.invoiceId}" title="Factuur">${plan.invoiceId}</a></td>
+        <td>${plan.status}</td>
+        <td class="right mono amount">${euro(plan.total)}</td>
+        <td>
+          <details open>
+            <summary>Termijnen</summary>
+            ${scheduleTable(plan)}
+          </details>
+        </td>
+      </tr>
+    `).join("");
+
+    // open total blijft gebaseerd op facturen-tab (niet op plannen)
+    document.getElementById("openTotal").textContent = euro(computeOpenTotal(invoices));
+  }
+
+  function setActiveTab(tab){
+    const btnInv = document.getElementById("tab-invoices");
+    const btnPlans = document.getElementById("tab-plans");
+    const pInv = document.getElementById("panel-invoices");
+    const pPlans = document.getElementById("panel-plans");
+
+    const isInv = tab === "invoices";
+    btnInv.classList.toggle("active", isInv);
+    btnPlans.classList.toggle("active", !isInv);
+    btnInv.setAttribute("aria-selected", isInv ? "true" : "false");
+    btnPlans.setAttribute("aria-selected", !isInv ? "true" : "false");
+
+    pInv.classList.toggle("hidden", !isInv);
+    pPlans.classList.toggle("hidden", isInv);
+
+    // re-render met huidige filter in juiste tab
+    const q = document.getElementById("q").value;
+    if(isInv) applyFilterInvoices(q);
+    else renderPlans(q);
+  }
+
+  function applyFilterInvoices(filterText){
+    const q = (filterText ?? "").trim().toLowerCase();
+    renderInvoices(invoices.filter(inv => inv.id.toLowerCase().includes(q)));
+  }
+
+  // events
+  document.getElementById("q").addEventListener("input", (e) => {
+    const activePlans = !document.getElementById("panel-plans").classList.contains("hidden");
+    if(activePlans) renderPlans(e.target.value);
+    else applyFilterInvoices(e.target.value);
   });
-}
 
-function render(list){
-  const sorted = sortInvoices(list);
-  document.getElementById("rows").innerHTML = sorted.map(inv => `
-    <tr>
-      <td class="mono">
-        <a href="#inv-${inv.id}" title="Factuur">${inv.id}</a>
-        ${inv.paymentPlan ? `<span class="badge">Betalingsregeling</span>` : ``}
-      </td>
-      <td>${fmtDate(inv.docDate)}</td>
-      <td>${fmtDate(inv.dueDate)}</td>
-      <td class="right mono amount">${euro(inv.amount)}</td>
-      <td>${statusPill(inv.status)}</td>
-      <td>
-        <details>
-          <summary>Transacties</summary>
-          ${txTable(inv.id)}
-        </details>
-      </td>
-    </tr>
-  `).join("");
-}
+  document.getElementById("tab-invoices").addEventListener("click", () => setActiveTab("invoices"));
+  document.getElementById("tab-plans").addEventListener("click", () => setActiveTab("plans"));
 
-function applyFilter(){
-  const q = document.getElementById("q").value.trim().toLowerCase();
-  render(invoices.filter(inv => inv.id.toLowerCase().includes(q)));
-}
-
-document.getElementById("q").addEventListener("input", applyFilter);
-applyFilter();
+  // init
+  setActiveTab("invoices");
 
 
 							</script>
