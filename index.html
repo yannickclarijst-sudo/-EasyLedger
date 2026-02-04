@@ -1,0 +1,393 @@
+
+                        <!DOCTYPE html>
+                        <html lang="en">
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+							<style>
+								body {
+									background-color: white; /* Ensure the iframe has a white background */
+								}
+
+								
+    :root{
+      --bg:#f6f7fb; --card:#fff; --text:#1f2937; --muted:#6b7280;
+      --line:#e5e7eb; --blue:#2563eb; --green:#16a34a; --amber:#d97706; --red:#dc2626; --purple:#7c3aed;
+    }
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);}
+    .wrap{max-width:1100px;margin:24px auto;padding:0 16px;}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 1px 2px rgba(0,0,0,.04);}
+    header{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:16px 16px 8px;}
+    header h1{font-size:18px;margin:0;}
+    .sub{padding:0 16px 16px;color:var(--muted);font-size:13px;}
+    .toolbar{display:flex;gap:12px;align-items:center;}
+    input[type="search"]{padding:10px 12px;border:1px solid var(--line);border-radius:10px;min-width:260px;}
+
+    table{width:100%;border-collapse:separate;border-spacing:0;}
+    thead th{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);text-align:left;
+      padding:10px 12px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:#fafafa;
+    }
+    tbody td{padding:12px;border-bottom:1px solid var(--line);vertical-align:top;}
+    tbody tr:hover{background:#fbfdff;}
+    .mono{font-variant-numeric:tabular-nums; font-feature-settings:"tnum" 1;}
+    .amount{white-space:nowrap;}
+    .right{text-align:right;}
+    a{color:var(--blue);text-decoration:none;}
+    a:hover{text-decoration:underline;}
+
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;
+      font-size:12px;font-weight:600;border:1px solid transparent;white-space:nowrap;
+    }
+    .dot{width:8px;height:8px;border-radius:99px;background:currentColor;display:inline-block;}
+    .pill.announced{color:var(--blue); background:rgba(37,99,235,.10); border-color:rgba(37,99,235,.18);}
+    .pill.processing{color:var(--amber); background:rgba(217,119,6,.12); border-color:rgba(217,119,6,.22);}
+    .pill.paid{color:var(--green); background:rgba(22,163,74,.10); border-color:rgba(22,163,74,.18);}
+    .pill.rejected{color:var(--red); background:rgba(220,38,38,.10); border-color:rgba(220,38,38,.18);}
+
+    .badge{
+      display:inline-flex;align-items:center;gap:6px;
+      padding:4px 8px;border-radius:999px;
+      font-size:12px;font-weight:600;
+      color:var(--purple); background:rgba(124,58,237,.10); border:1px solid rgba(124,58,237,.18);
+      margin-left:8px;
+    }
+
+    details summary{cursor:pointer;color:var(--blue);font-size:13px;}
+    .tx{ margin-top:8px;border:1px solid var(--line);border-radius:10px;overflow:hidden; }
+    .tx table{width:100%;}
+    .tx thead th{background:#fff;border-top:none;}
+    .muted{color:var(--muted);}
+  
+
+							</style>
+                        </head>
+                        <body>
+                            <!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Facturen - Demo</title>
+  <style>
+    :root{
+      --bg:#f6f7fb; --card:#fff; --text:#1f2937; --muted:#6b7280;
+      --line:#e5e7eb; --blue:#2563eb; --green:#16a34a; --amber:#d97706; --red:#dc2626; --purple:#7c3aed;
+    }
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);}
+    .wrap{max-width:1100px;margin:24px auto;padding:0 16px;}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 1px 2px rgba(0,0,0,.04);}
+    header{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:16px 16px 8px;}
+    header h1{font-size:18px;margin:0;}
+    .sub{padding:0 16px 16px;color:var(--muted);font-size:13px;}
+    .toolbar{display:flex;gap:12px;align-items:center;}
+    input[type="search"]{padding:10px 12px;border:1px solid var(--line);border-radius:10px;min-width:260px;}
+
+    table{width:100%;border-collapse:separate;border-spacing:0;}
+    thead th{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);text-align:left;
+      padding:10px 12px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:#fafafa;
+    }
+    tbody td{padding:12px;border-bottom:1px solid var(--line);vertical-align:top;}
+    tbody tr:hover{background:#fbfdff;}
+    .mono{font-variant-numeric:tabular-nums; font-feature-settings:"tnum" 1;}
+    .amount{white-space:nowrap;}
+    .right{text-align:right;}
+    a{color:var(--blue);text-decoration:none;}
+    a:hover{text-decoration:underline;}
+
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;
+      font-size:12px;font-weight:600;border:1px solid transparent;white-space:nowrap;
+    }
+    .dot{width:8px;height:8px;border-radius:99px;background:currentColor;display:inline-block;}
+    .pill.announced{color:var(--blue); background:rgba(37,99,235,.10); border-color:rgba(37,99,235,.18);}
+    .pill.processing{color:var(--amber); background:rgba(217,119,6,.12); border-color:rgba(217,119,6,.22);}
+    .pill.paid{color:var(--green); background:rgba(22,163,74,.10); border-color:rgba(22,163,74,.18);}
+    .pill.rejected{color:var(--red); background:rgba(220,38,38,.10); border-color:rgba(220,38,38,.18);}
+
+    .badge{
+      display:inline-flex;align-items:center;gap:6px;
+      padding:4px 8px;border-radius:999px;
+      font-size:12px;font-weight:600;
+      color:var(--purple); background:rgba(124,58,237,.10); border:1px solid rgba(124,58,237,.18);
+      margin-left:8px;
+    }
+
+    details summary{cursor:pointer;color:var(--blue);font-size:13px;}
+    .tx{ margin-top:8px;border:1px solid var(--line);border-radius:10px;overflow:hidden; }
+    .tx table{width:100%;}
+    .tx thead th{background:#fff;border-top:none;}
+    .muted{color:var(--muted);}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <header>
+        <div>
+          <h1>Facturen</h1>
+          <div class="muted" style="font-size:13px;">Demo: factuurregels met status, betalingsregeling en gekoppelde transacties</div>
+        </div>
+        <div class="toolbar">
+          <input id="q" type="search" placeholder="Zoek op factuurnr…" />
+        </div>
+      </header>
+      <div class="sub">Statusvolgorde: Aangekondigd → In behandeling → Afgewezen → Betaald</div>
+
+      <table>
+        <thead>
+          <tr>
+            <th style="width:200px;">Factuur</th>
+            <th style="width:120px;">Factuurdatum</th>
+            <th style="width:120px;">Vervaldatum</th>
+            <th class="right" style="width:120px;">Bedrag</th>
+            <th style="width:220px;">Status</th>
+            <th>Transacties</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </div>
+
+<script>
+// gewenste volgorde
+const STATUS_ORDER = ["announced","processing","rejected","paid"];
+const STATUS_LABEL = {
+  announced: "Aangekondigd",
+  processing: "In behandeling",
+  rejected: "Afgewezen",
+  paid: "Betaald"
+};
+
+// Mock facturen (alleen invoices)
+const invoices = [
+  {id:"901617100120", docDate:"2026-01-06", dueDate:"2026-01-28", amount:135.69, status:"paid", paymentPlan:false},
+  {id:"901606243302", docDate:"2025-10-07", dueDate:"2025-10-29", amount:146.53, status:"processing", paymentPlan:true},
+  {id:"901593944807", docDate:"2025-07-11", dueDate:"2025-09-02", amount:135.73, status:"announced", paymentPlan:false},
+  {id:"901590998875", docDate:"2025-05-08", dueDate:"2025-05-30", amount:135.42, status:"rejected", paymentPlan:true},
+];
+
+// transacties per factuur (simpel)
+const transactionsByInvoice = {
+  "901617100120": [
+    {doc:"501536377686", date:"2026-01-22", type:"Direct Debit", amount:-135.69, result:"Matched"}
+  ],
+  "901606243302": [
+    {doc:"PLAN-3302", date:"2025-10-10", type:"Payment plan created", amount:0.00, result:"Active"},
+    {doc:"DD-3302", date:"2025-10-25", type:"Direct Debit", amount:-146.53, result:"Pending"}
+  ],
+  "901593944807": [
+    {doc:"PREN-4807", date:"2025-07-20", type:"Pre-notification", amount:0.00, result:"Announced"}
+  ],
+  "901590998875": [
+    {doc:"PLAN-8875", date:"2025-05-09", type:"Payment plan created", amount:0.00, result:"Active"},
+    {doc:"RJ-8875", date:"2025-05-12", type:"Direct Debit", amount:-135.42, result:"Rejected (R-code)"}
+  ]
+};
+
+const euro = n => (n<0?"-":"") + "€ " + Math.abs(n).toFixed(2).replace(".", ",");
+const fmtDate = d => d.split("-").reverse().join("-");
+
+function statusPill(statusKey){
+  const label = STATUS_LABEL[statusKey] ?? statusKey;
+  return `<span class="pill ${statusKey}"><span class="dot"></span>${label}</span>`;
+}
+
+function txTable(invoiceId){
+  const txs = transactionsByInvoice[invoiceId] || [];
+  if(!txs.length) return `<div class="muted">Geen transacties.</div>`;
+
+  return `
+    <div class="tx">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:160px;">Transactie</th>
+            <th style="width:120px;">Datum</th>
+            <th style="width:220px;">Type</th>
+            <th class="right" style="width:120px;">Bedrag</th>
+            <th>Resultaat</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${txs.map(t=>`
+            <tr>
+              <td class="mono">${t.doc}</td>
+              <td>${fmtDate(t.date)}</td>
+              <td>${t.type}</td>
+              <td class="right mono amount">${euro(t.amount)}</td>
+              <td>${t.result}</td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function sortInvoices(list){
+  return [...list].sort((a,b) => {
+    const sa = STATUS_ORDER.indexOf(a.status);
+    const sb = STATUS_ORDER.indexOf(b.status);
+    if(sa !== sb) return sa - sb;                 // status-volgorde
+    return (b.docDate).localeCompare(a.docDate);  // binnen status: nieuwste eerst
+  });
+}
+
+function render(list){
+  const sorted = sortInvoices(list);
+  document.getElementById("rows").innerHTML = sorted.map(inv => `
+    <tr>
+      <td class="mono">
+        <a href="#inv-${inv.id}" title="Factuur">${inv.id}</a>
+        ${inv.paymentPlan ? `<span class="badge">Betalingsregeling</span>` : ``}
+      </td>
+      <td>${fmtDate(inv.docDate)}</td>
+      <td>${fmtDate(inv.dueDate)}</td>
+      <td class="right mono amount">${euro(inv.amount)}</td>
+      <td>${statusPill(inv.status)}</td>
+      <td>
+        <details>
+          <summary>Transacties</summary>
+          ${txTable(inv.id)}
+        </details>
+      </td>
+    </tr>
+  `).join("");
+}
+
+function applyFilter(){
+  const q = document.getElementById("q").value.trim().toLowerCase();
+  render(invoices.filter(inv => inv.id.toLowerCase().includes(q)));
+}
+
+document.getElementById("q").addEventListener("input", applyFilter);
+applyFilter();
+</script>
+</body>
+</html>
+
+
+
+							<script>
+                            	
+// gewenste volgorde
+const STATUS_ORDER = ["announced","processing","rejected","paid"];
+const STATUS_LABEL = {
+  announced: "Aangekondigd",
+  processing: "In behandeling",
+  rejected: "Afgewezen",
+  paid: "Betaald"
+};
+
+// Mock facturen (alleen invoices)
+const invoices = [
+  {id:"901617100120", docDate:"2026-01-06", dueDate:"2026-01-28", amount:135.69, status:"paid", paymentPlan:false},
+  {id:"901606243302", docDate:"2025-10-07", dueDate:"2025-10-29", amount:146.53, status:"processing", paymentPlan:true},
+  {id:"901593944807", docDate:"2025-07-11", dueDate:"2025-09-02", amount:135.73, status:"announced", paymentPlan:false},
+  {id:"901590998875", docDate:"2025-05-08", dueDate:"2025-05-30", amount:135.42, status:"rejected", paymentPlan:true},
+];
+
+// transacties per factuur (simpel)
+const transactionsByInvoice = {
+  "901617100120": [
+    {doc:"501536377686", date:"2026-01-22", type:"Direct Debit", amount:-135.69, result:"Matched"}
+  ],
+  "901606243302": [
+    {doc:"PLAN-3302", date:"2025-10-10", type:"Payment plan created", amount:0.00, result:"Active"},
+    {doc:"DD-3302", date:"2025-10-25", type:"Direct Debit", amount:-146.53, result:"Pending"}
+  ],
+  "901593944807": [
+    {doc:"PREN-4807", date:"2025-07-20", type:"Pre-notification", amount:0.00, result:"Announced"}
+  ],
+  "901590998875": [
+    {doc:"PLAN-8875", date:"2025-05-09", type:"Payment plan created", amount:0.00, result:"Active"},
+    {doc:"RJ-8875", date:"2025-05-12", type:"Direct Debit", amount:-135.42, result:"Rejected (R-code)"}
+  ]
+};
+
+const euro = n => (n<0?"-":"") + "€ " + Math.abs(n).toFixed(2).replace(".", ",");
+const fmtDate = d => d.split("-").reverse().join("-");
+
+function statusPill(statusKey){
+  const label = STATUS_LABEL[statusKey] ?? statusKey;
+  return `<span class="pill ${statusKey}"><span class="dot"></span>${label}</span>`;
+}
+
+function txTable(invoiceId){
+  const txs = transactionsByInvoice[invoiceId] || [];
+  if(!txs.length) return `<div class="muted">Geen transacties.</div>`;
+
+  return `
+    <div class="tx">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:160px;">Transactie</th>
+            <th style="width:120px;">Datum</th>
+            <th style="width:220px;">Type</th>
+            <th class="right" style="width:120px;">Bedrag</th>
+            <th>Resultaat</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${txs.map(t=>`
+            <tr>
+              <td class="mono">${t.doc}</td>
+              <td>${fmtDate(t.date)}</td>
+              <td>${t.type}</td>
+              <td class="right mono amount">${euro(t.amount)}</td>
+              <td>${t.result}</td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function sortInvoices(list){
+  return [...list].sort((a,b) => {
+    const sa = STATUS_ORDER.indexOf(a.status);
+    const sb = STATUS_ORDER.indexOf(b.status);
+    if(sa !== sb) return sa - sb;                 // status-volgorde
+    return (b.docDate).localeCompare(a.docDate);  // binnen status: nieuwste eerst
+  });
+}
+
+function render(list){
+  const sorted = sortInvoices(list);
+  document.getElementById("rows").innerHTML = sorted.map(inv => `
+    <tr>
+      <td class="mono">
+        <a href="#inv-${inv.id}" title="Factuur">${inv.id}</a>
+        ${inv.paymentPlan ? `<span class="badge">Betalingsregeling</span>` : ``}
+      </td>
+      <td>${fmtDate(inv.docDate)}</td>
+      <td>${fmtDate(inv.dueDate)}</td>
+      <td class="right mono amount">${euro(inv.amount)}</td>
+      <td>${statusPill(inv.status)}</td>
+      <td>
+        <details>
+          <summary>Transacties</summary>
+          ${txTable(inv.id)}
+        </details>
+      </td>
+    </tr>
+  `).join("");
+}
+
+function applyFilter(){
+  const q = document.getElementById("q").value.trim().toLowerCase();
+  render(invoices.filter(inv => inv.id.toLowerCase().includes(q)));
+}
+
+document.getElementById("q").addEventListener("input", applyFilter);
+applyFilter();
+
+
+							</script>
+                        </body>
+                        </html>
+                    
