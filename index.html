@@ -15,6 +15,7 @@
       --line:#23304a; --blue:#60a5fa; --green:#22c55e; --amber:#f59e0b; --red:#ef4444; --purple:#a78bfa;
       --slate:#cbd5e1;
     }
+
     body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);}
     .wrap{max-width:1200px;margin:24px auto;padding:0 16px;}
     .card{background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 1px 2px rgba(0,0,0,.10);}
@@ -171,13 +172,12 @@
       </header>
 
       <div class="sub">
-        <div id="subLeft">Regels: N/A &nbsp; Dunning: N/A</div>
+        <div id="subLeft">Regels: N/A  Dunning: N/A</div>
         <div class="kpis">
           <div class="kpi"><span id="lblOpenTotal">Totaal openstaand</span><b id="openTotal">€ 0,00</b></div>
         </div>
       </div>
 
-      <!-- TAB: INVOICES -->
       <div id="panel-invoices" class="tabpanel">
         <table>
           <thead>
@@ -196,7 +196,6 @@
         </table>
       </div>
 
-      <!-- TAB: PAYMENTS -->
       <div id="panel-payments" class="tabpanel hidden">
         <table>
           <thead>
@@ -213,7 +212,6 @@
         </table>
       </div>
 
-      <!-- TAB: PLANS -->
       <div id="panel-plans" class="tabpanel hidden">
         <table>
           <thead>
@@ -229,7 +227,6 @@
         </table>
       </div>
 
-      <!-- TAB: CREDITS -->
       <div id="panel-credits" class="tabpanel hidden">
         <table>
           <thead>
@@ -266,11 +263,8 @@
       },
       invoiceNameMonth: (m) => `Factuur ${m}`,
       months: ["Januari","Februari","Maart","April","Mei","Juni","Juli","Augustus","September","Oktober","November","December"],
-      dunningOn: "Aan", dunningOff:"Uit",
-      dunningLabel: "Dunning",
-      levelLabel: "Level",
-      txNone: "Geen transacties.",
-      txSummary: "Transacties",
+      dunningOn: "Aan", dunningOff:"Uit", dunningLabel: "Dunning", levelLabel: "Level",
+      txNone: "Geen transacties.", txSummary: "Transacties",
       paymentPlanBadge: "Betalingsregeling",
       paymentPills: { Settled:"Verwerkt", Pending:"In verwerking", Rejected:"Afgewezen" },
       invoicePills: { paid:"Betaald", partial:"Deels betaald", announced:"Aangekondigd", processing:"In behandeling", rejected:"Afgewezen" },
@@ -293,11 +287,8 @@
       },
       invoiceNameMonth: (m) => `Invoice ${m}`,
       months: ["January","February","March","April","May","June","July","August","September","October","November","December"],
-      dunningOn: "On", dunningOff:"Off",
-      dunningLabel: "Dunning",
-      levelLabel: "Level",
-      txNone: "No transactions.",
-      txSummary: "Transactions",
+      dunningOn: "On", dunningOff:"Off", dunningLabel: "Dunning", levelLabel: "Level",
+      txNone: "No transactions.", txSummary: "Transactions",
       paymentPlanBadge: "Payment plan",
       paymentPills: { Settled:"Processed", Pending:"Processing", Rejected:"Rejected" },
       invoicePills: { paid:"Paid", partial:"Partially paid", announced:"Announced", processing:"Processing", rejected:"Rejected" },
@@ -311,62 +302,7 @@
   let lang = localStorage.getItem("easy-ledger-lang") || "nl";
   function t(){ return I18N[lang]; }
 
-  function setLang(next){
-    lang = next;
-    localStorage.setItem("easy-ledger-lang", lang);
-    document.getElementById("lang-nl").classList.toggle("active", lang==="nl");
-    document.getElementById("lang-en").classList.toggle("active", lang==="en");
-
-    // update static UI labels
-    document.getElementById("tab-invoices").textContent = t().tabs.invoices;
-    document.getElementById("tab-payments").textContent = t().tabs.payments;
-    document.getElementById("tab-plans").textContent = t().tabs.plans;
-    document.getElementById("tab-credits").textContent = t().tabs.credits;
-
-    document.getElementById("subLeft").textContent = t().subLeft;
-    document.getElementById("lblOpenTotal").textContent = t().openTotal;
-    document.getElementById("q").placeholder = t().searchPlaceholder;
-    document.getElementById("lblDarkMode").textContent = t().darkMode;
-
-    // headers
-    const h = t().headers;
-    document.getElementById("thInvoice").textContent = h.invoice;
-    document.getElementById("thInvoiceDate").textContent = h.invoiceDate;
-    document.getElementById("thDueDate").textContent = h.dueDate;
-    document.getElementById("thAmount").textContent = h.amount;
-    document.getElementById("thOpen").textContent = h.open;
-    document.getElementById("thStatus").textContent = h.status;
-    document.getElementById("thDunning").textContent = h.dunning;
-    document.getElementById("thTx").textContent = h.tx;
-
-    document.getElementById("thPayment").textContent = h.payment;
-    document.getElementById("thPayDate").textContent = h.payDate;
-    document.getElementById("thMethod").textContent = h.method;
-    document.getElementById("thPayStatus").textContent = h.payStatus;
-    document.getElementById("thPayAmount").textContent = h.payAmount;
-    document.getElementById("thLinked").textContent = h.linked;
-
-    document.getElementById("thPlan").textContent = h.plan;
-    document.getElementById("thPlanInvoices").textContent = h.planInvoices;
-    document.getElementById("thPlanStatus").textContent = h.planStatus;
-    document.getElementById("thPlanTotal").textContent = h.planTotal;
-    document.getElementById("thSchedule").textContent = h.schedule;
-
-    document.getElementById("thCredit").textContent = h.credit;
-    document.getElementById("thCreditDate").textContent = h.creditDate;
-    document.getElementById("thCreditType").textContent = h.creditType;
-    document.getElementById("thCreditAmount").textContent = h.creditAmount;
-    document.getElementById("thCreditStatus").textContent = h.creditStatus;
-    document.getElementById("thCreditLinked").textContent = h.creditLinked;
-
-    // rerender current tab
-    setActiveTab(currentTab);
-  }
-
-  document.getElementById("lang-nl").addEventListener("click", () => setLang("nl"));
-  document.getElementById("lang-en").addEventListener("click", () => setLang("en"));
-
-  // ===== Dark mode (persist) =====
+  // ===== Theme =====
   const THEME_KEY = "easy-ledger-theme";
   function applyTheme(theme){
     if(theme === "dark") document.documentElement.setAttribute("data-theme","dark");
@@ -382,8 +318,7 @@
 
   // ===== Helpers =====
   const euro = n => (n<0?"-":"") + "€ " + Math.abs(n).toFixed(2).replace(".", ",");
-  const usd = n => (n<0?"-":"") + "$" + Math.abs(n).toFixed(2);
-  const money = n => (lang==="nl" ? euro(n) : usd(n));
+  const money = n => euro(n); // <-- always EURO, also in English
   const fmtDate = d => {
     const [y,m,dd] = d.split("-");
     return lang==="nl" ? `${dd}-${m}-${y}` : `${m}/${dd}/${y}`;
@@ -440,44 +375,14 @@
   ];
 
   const payments = [
-    {
-      id:"PAY-20260228-BULK",
-      date:"2026-02-28",
-      method:"Bank transfer",
-      status:"Settled",
-      amount:200.00,
-      allocations:[
-        {invoiceId: fixInvoiceId("901617100123"), amount:80.00},
-        {invoiceId: fixInvoiceId("901617100124"), amount:120.00},
-      ]
-    },
-    {
-      id:"PAY-20260219-0001",
-      date:"2026-02-19",
-      method:"Direct debit (SEPA DD)",
-      status:"Pending",
-      amount:146.53,
-      allocations:[{invoiceId:fixInvoiceId("901617100121"), amount:146.53}]
-    },
-    {
-      id:"PAY-20260120-0009",
-      date:"2026-01-20",
-      method:"Direct debit (SEPA DD)",
-      status:"Settled",
-      amount:120.73,
-      allocations:[{invoiceId:fixInvoiceId("901617100122"), amount:120.73}]
-    },
-    {
-      id:"PAY-20251210-SHOP",
-      date:"2025-12-10",
-      method:"Payment in shop",
-      status:"Settled",
-      amount:35.00,
-      allocations:[
-        {invoiceId:fixInvoiceId("901617100123"), amount:25.00},
-        {invoiceId:fixInvoiceId("901617100124"), amount:10.00}
-      ]
-    }
+    { id:"PAY-20260228-BULK", date:"2026-02-28", method:"Bank transfer", status:"Settled", amount:200.00,
+      allocations:[{invoiceId: fixInvoiceId("901617100123"), amount:80.00},{invoiceId: fixInvoiceId("901617100124"), amount:120.00}] },
+    { id:"PAY-20260219-0001", date:"2026-02-19", method:"Direct debit (SEPA DD)", status:"Pending", amount:146.53,
+      allocations:[{invoiceId:fixInvoiceId("901617100121"), amount:146.53}] },
+    { id:"PAY-20260120-0009", date:"2026-01-20", method:"Direct debit (SEPA DD)", status:"Settled", amount:120.73,
+      allocations:[{invoiceId:fixInvoiceId("901617100122"), amount:120.73}] },
+    { id:"PAY-20251210-SHOP", date:"2025-12-10", method:"Payment in shop", status:"Settled", amount:35.00,
+      allocations:[{invoiceId:fixInvoiceId("901617100123"), amount:25.00},{invoiceId:fixInvoiceId("901617100124"), amount:10.00}] }
   ];
 
   // ===== Calculations =====
@@ -545,7 +450,6 @@
     return {mode:"off", level:0};
   }
 
-  // ===== UI bits =====
   function statusPillFromInvoice(inv){
     const st = invoiceStatus(inv);
     return pill(st.label, st.key);
@@ -567,10 +471,6 @@
       case "Rejected": return pill(map.Rejected, "danger");
       default: return pill(status, "neutral");
     }
-  }
-  function creditStatusPill(status){
-    // demo only uses applied
-    return status === "Verrekend" ? pill(lang==="nl" ? "Verrekend" : "Applied", "success") : pill(status, "neutral");
   }
   function planLineStatusPill(status){
     const m = t().planLinePills;
@@ -603,7 +503,6 @@
       txs.push({ doc:a.doc, date:a.date, type:`${t().tabs.plans} (${a.planId})`, amount:-Math.abs(a.amount), result:t().planLinePills.Paid });
     }
     if(!txs.length) return `<div class="muted">${t().txNone}</div>`;
-    const resultText = (s) => (s === "Settled" ? t().resultMatched : s);
     txs.sort((a,b) => b.date.localeCompare(a.date));
     return `
       <div class="tx">
@@ -624,7 +523,7 @@
                 <td>${fmtDate(txx.date)}</td>
                 <td>${txx.type}</td>
                 <td class="right mono amount">${money(txx.amount)}</td>
-                <td>${resultText(txx.result)}</td>
+                <td>${txx.result === "Settled" ? t().resultMatched : txx.result}</td>
               </tr>
             `).join("")}
           </tbody>
@@ -633,10 +532,7 @@
     `;
   }
 
-  // ===== Render =====
-  function sortInvoicesNewestFirst(list){
-    return [...list].sort((a,b) => b.docDate.localeCompare(a.docDate));
-  }
+  function sortInvoicesNewestFirst(list){ return [...list].sort((a,b) => b.docDate.localeCompare(a.docDate)); }
 
   function renderInvoices(list){
     const sorted = sortInvoicesNewestFirst(list);
@@ -690,7 +586,6 @@
             `).join("")}
           </ul>`
         : `<span class="muted">—</span>`;
-
       return `
         <tr id="pay-${p.id}">
           <td class="mono"><a href="#pay-${p.id}">${p.id}</a></td>
@@ -786,7 +681,7 @@
           <td>${fmtDate(c.createdDate)}</td>
           <td>${c.type}</td>
           <td class="right mono amount">${money(c.amount)}</td>
-          <td>${creditStatusPill(c.status)}</td>
+          <td>${c.status==="Verrekend" ? pill(lang==="nl" ? "Verrekend" : "Applied", "success") : pill(c.status, "neutral")}</td>
           <td>${linkHtml}</td>
         </tr>
       `;
@@ -796,7 +691,6 @@
 
   // ===== Tabs + search =====
   let currentTab = "invoices";
-
   function setActiveTab(tab){
     currentTab = tab;
     const map = [
@@ -819,14 +713,12 @@
     else if(tab === "plans") renderPlans(q);
     else renderCredits(q);
   }
-
   function applyFilterInvoices(filterText){
     const q = (filterText ?? "").trim().toLowerCase();
     renderInvoices(invoices.filter(inv =>
       inv.id.toLowerCase().includes(q) || invoiceName(inv).toLowerCase().includes(q)
     ));
   }
-
   function openPlansTab(planId){
     setActiveTab("plans");
     if(planId){
@@ -851,7 +743,59 @@
   document.getElementById("tab-plans").addEventListener("click", () => setActiveTab("plans"));
   document.getElementById("tab-credits").addEventListener("click", () => setActiveTab("credits"));
 
-  // init language + initial render
+  function setLang(next){
+    lang = next;
+    localStorage.setItem("easy-ledger-lang", lang);
+    document.getElementById("lang-nl").classList.toggle("active", lang==="nl");
+    document.getElementById("lang-en").classList.toggle("active", lang==="en");
+
+    document.getElementById("tab-invoices").textContent = t().tabs.invoices;
+    document.getElementById("tab-payments").textContent = t().tabs.payments;
+    document.getElementById("tab-plans").textContent = t().tabs.plans;
+    document.getElementById("tab-credits").textContent = t().tabs.credits;
+
+    document.getElementById("subLeft").textContent = t().subLeft;
+    document.getElementById("lblOpenTotal").textContent = t().openTotal;
+    document.getElementById("q").placeholder = t().searchPlaceholder;
+    document.getElementById("lblDarkMode").textContent = t().darkMode;
+
+    const h = t().headers;
+    document.getElementById("thInvoice").textContent = h.invoice;
+    document.getElementById("thInvoiceDate").textContent = h.invoiceDate;
+    document.getElementById("thDueDate").textContent = h.dueDate;
+    document.getElementById("thAmount").textContent = h.amount;
+    document.getElementById("thOpen").textContent = h.open;
+    document.getElementById("thStatus").textContent = h.status;
+    document.getElementById("thDunning").textContent = h.dunning;
+    document.getElementById("thTx").textContent = h.tx;
+
+    document.getElementById("thPayment").textContent = h.payment;
+    document.getElementById("thPayDate").textContent = h.payDate;
+    document.getElementById("thMethod").textContent = h.method;
+    document.getElementById("thPayStatus").textContent = h.payStatus;
+    document.getElementById("thPayAmount").textContent = h.payAmount;
+    document.getElementById("thLinked").textContent = h.linked;
+
+    document.getElementById("thPlan").textContent = h.plan;
+    document.getElementById("thPlanInvoices").textContent = h.planInvoices;
+    document.getElementById("thPlanStatus").textContent = h.planStatus;
+    document.getElementById("thPlanTotal").textContent = h.planTotal;
+    document.getElementById("thSchedule").textContent = h.schedule;
+
+    document.getElementById("thCredit").textContent = h.credit;
+    document.getElementById("thCreditDate").textContent = h.creditDate;
+    document.getElementById("thCreditType").textContent = h.creditType;
+    document.getElementById("thCreditAmount").textContent = h.creditAmount;
+    document.getElementById("thCreditStatus").textContent = h.creditStatus;
+    document.getElementById("thCreditLinked").textContent = h.creditLinked;
+
+    setActiveTab(currentTab);
+  }
+
+  document.getElementById("lang-nl").addEventListener("click", () => setLang("nl"));
+  document.getElementById("lang-en").addEventListener("click", () => setLang("en"));
+
+  // init
   setLang(lang);
 </script>
 </body>
