@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Facturen / Betalingen / Betalingsregelingen / Credit-Debit - Demo</title>
+  <title>Easy Ledger - Demo</title>
   <style>
     :root{
       --bg:#f6f7fb; --card:#fff; --text:#1f2937; --muted:#6b7280;
@@ -15,7 +15,6 @@
       --line:#23304a; --blue:#60a5fa; --green:#22c55e; --amber:#f59e0b; --red:#ef4444; --purple:#a78bfa;
       --slate:#cbd5e1;
     }
-
     body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);}
     .wrap{max-width:1200px;margin:24px auto;padding:0 16px;}
     .card{background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 1px 2px rgba(0,0,0,.10);}
@@ -108,12 +107,12 @@
     .tabpanel{padding:0 16px 16px;}
     .hidden{display:none;}
 
-    /* Invoice name next to invoice id */
     .invCell{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;}
     .invName{font-weight:700;}
     .invId{color:var(--muted);font-size:12px;}
 
-    /* Darkmode switch */
+    /* toggles */
+    .toggleGroup{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
     .switch{display:inline-flex;align-items:center;gap:10px;color:var(--muted);font-size:13px;user-select:none;}
     .switch input{display:none;}
     .track{
@@ -129,6 +128,13 @@
     html[data-theme="dark"] .track{background:rgba(148,163,184,.12);}
     html[data-theme="dark"] .thumb{background:#e5e7eb;}
     .switch input:checked + .track .thumb{left:23px;}
+
+    .langbtn{
+      border:1px solid var(--line);background:transparent;color:var(--text);
+      padding:8px 10px;border-radius:10px;font-size:13px;cursor:pointer;
+    }
+    .langbtn.active{border-color:rgba(37,99,235,.35);box-shadow:0 0 0 3px rgba(37,99,235,.10);}
+    html[data-theme="dark"] .langbtn.active{box-shadow:0 0 0 3px rgba(96,165,250,.18);}
   </style>
 </head>
 <body>
@@ -136,8 +142,8 @@
     <div class="card">
       <header>
         <div>
-          <h1>Easy Ledger</h1>
-          <div class="muted" style="font-size:13px;">Demo Easy Ledger</div>
+          <h1 id="appTitle">Easy Ledger</h1>
+          <div class="muted" style="font-size:13px;" id="appSubtitle">Demo Easy Ledger</div>
         </div>
         <div class="toolbar">
           <div class="tabs" role="tablist" aria-label="Overzicht tabs">
@@ -147,95 +153,219 @@
             <button class="tabbtn" id="tab-credits" data-tab="credits" role="tab" aria-selected="false" type="button">Credit/Debit</button>
           </div>
 
-          <label class="switch" title="Toggle dark mode">
-            <input id="darkToggle" type="checkbox" />
-            <span class="track"><span class="thumb"></span></span>
-            <span>Dark mode</span>
-          </label>
+          <div class="toggleGroup">
+            <div class="tabs" role="group" aria-label="Language">
+              <button class="langbtn active" id="lang-nl" type="button">NL</button>
+              <button class="langbtn" id="lang-en" type="button">EN</button>
+            </div>
+
+            <label class="switch" title="Toggle dark mode">
+              <input id="darkToggle" type="checkbox" />
+              <span class="track"><span class="thumb"></span></span>
+              <span id="lblDarkMode">Dark mode</span>
+            </label>
+          </div>
 
           <input id="q" type="search" placeholder="Zoek op factuur, betaling, plan of credit…" />
         </div>
       </header>
 
       <div class="sub">
-        <div>Regels: N/A &nbsp; Dunning: N/A</div>
+        <div id="subLeft">Regels: N/A &nbsp; Dunning: N/A</div>
         <div class="kpis">
-          <div class="kpi"><span>Totaal openstaand</span><b id="openTotal">€ 0,00</b></div>
+          <div class="kpi"><span id="lblOpenTotal">Totaal openstaand</span><b id="openTotal">€ 0,00</b></div>
         </div>
       </div>
 
-      <!-- TAB: FACTUREN -->
+      <!-- TAB: INVOICES -->
       <div id="panel-invoices" class="tabpanel">
         <table>
           <thead>
             <tr>
-              <th style="width:320px;">Factuur</th>
-              <th style="width:120px;">Factuurdatum</th>
-              <th style="width:120px;">Vervaldatum</th>
-              <th class="right" style="width:120px;">Bedrag</th>
-              <th class="right" style="width:140px;">Openstaand</th>
-              <th style="width:210px;">Status</th>
-              <th style="width:240px;">Dunning</th>
-              <th>Transacties</th>
+              <th style="width:320px;" id="thInvoice">Factuur</th>
+              <th style="width:120px;" id="thInvoiceDate">Factuurdatum</th>
+              <th style="width:120px;" id="thDueDate">Vervaldatum</th>
+              <th class="right" style="width:120px;" id="thAmount">Bedrag</th>
+              <th class="right" style="width:140px;" id="thOpen">Openstaand</th>
+              <th style="width:210px;" id="thStatus">Status</th>
+              <th style="width:240px;" id="thDunning">Dunning</th>
+              <th id="thTx">Transacties</th>
             </tr>
           </thead>
           <tbody id="rows"></tbody>
         </table>
       </div>
 
-      <!-- TAB: BETALINGEN -->
+      <!-- TAB: PAYMENTS -->
       <div id="panel-payments" class="tabpanel hidden">
         <table>
           <thead>
             <tr>
-              <th style="width:180px;">Betaling</th>
-              <th style="width:120px;">Datum</th>
-              <th style="width:200px;">Methode</th>
-              <th style="width:200px;">Status</th>
-              <th class="right" style="width:140px;">Bedrag</th>
-              <th>Gekoppeld aan facturen</th>
+              <th style="width:180px;" id="thPayment">Betaling</th>
+              <th style="width:120px;" id="thPayDate">Datum</th>
+              <th style="width:200px;" id="thMethod">Methode</th>
+              <th style="width:200px;" id="thPayStatus">Status</th>
+              <th class="right" style="width:140px;" id="thPayAmount">Bedrag</th>
+              <th id="thLinked">Gekoppeld aan facturen</th>
             </tr>
           </thead>
           <tbody id="paymentRows"></tbody>
         </table>
       </div>
 
-      <!-- TAB: BETALINGSREGELINGEN -->
+      <!-- TAB: PLANS -->
       <div id="panel-plans" class="tabpanel hidden">
         <table>
           <thead>
             <tr>
-              <th style="width:200px;">Plan</th>
-              <th style="width:200px;">Facturen</th>
-              <th style="width:160px;">Status</th>
-              <th class="right" style="width:140px;">Totaal</th>
-              <th>Termijnen & afschrijvingen</th>
+              <th style="width:200px;" id="thPlan">Plan</th>
+              <th style="width:200px;" id="thPlanInvoices">Facturen</th>
+              <th style="width:160px;" id="thPlanStatus">Status</th>
+              <th class="right" style="width:140px;" id="thPlanTotal">Totaal</th>
+              <th id="thSchedule">Termijnen & afschrijvingen</th>
             </tr>
           </thead>
           <tbody id="planRows"></tbody>
         </table>
       </div>
 
-      <!-- TAB: CREDIT/DEBIT -->
+      <!-- TAB: CREDITS -->
       <div id="panel-credits" class="tabpanel hidden">
         <table>
           <thead>
             <tr>
-              <th style="width:180px;">Credit</th>
-              <th style="width:140px;">Datum toegevoegd</th>
-              <th style="width:160px;">Type</th>
-              <th class="right" style="width:140px;">Bedrag</th>
-              <th style="width:260px;">Status</th>
-              <th>Verrekend met / gepland op</th>
+              <th style="width:180px;" id="thCredit">Credit</th>
+              <th style="width:140px;" id="thCreditDate">Datum toegevoegd</th>
+              <th style="width:160px;" id="thCreditType">Type</th>
+              <th class="right" style="width:140px;" id="thCreditAmount">Bedrag</th>
+              <th style="width:260px;" id="thCreditStatus">Status</th>
+              <th id="thCreditLinked">Verrekend met / gepland op</th>
             </tr>
           </thead>
           <tbody id="creditRows"></tbody>
         </table>
       </div>
+
     </div>
   </div>
 
 <script>
+  // ===== i18n =====
+  const I18N = {
+    nl: {
+      searchPlaceholder: "Zoek op factuur, betaling, plan of credit…",
+      tabs: { invoices:"Facturen", payments:"Betalingen", plans:"Betalingsregelingen", credits:"Credit/Debit" },
+      subLeft: "Regels: N/A  Dunning: N/A",
+      openTotal: "Totaal openstaand",
+      headers: {
+        invoice:"Factuur", invoiceDate:"Factuurdatum", dueDate:"Vervaldatum", amount:"Bedrag", open:"Openstaand",
+        status:"Status", dunning:"Dunning", tx:"Transacties",
+        payment:"Betaling", payDate:"Datum", method:"Methode", payStatus:"Status", payAmount:"Bedrag", linked:"Gekoppeld aan facturen",
+        plan:"Plan", planInvoices:"Facturen", planStatus:"Status", planTotal:"Totaal", schedule:"Termijnen & afschrijvingen",
+        credit:"Credit", creditDate:"Datum toegevoegd", creditType:"Type", creditAmount:"Bedrag", creditStatus:"Status", creditLinked:"Verrekend met / gepland op"
+      },
+      invoiceNameMonth: (m) => `Factuur ${m}`,
+      months: ["Januari","Februari","Maart","April","Mei","Juni","Juli","Augustus","September","Oktober","November","December"],
+      dunningOn: "Aan", dunningOff:"Uit",
+      dunningLabel: "Dunning",
+      levelLabel: "Level",
+      txNone: "Geen transacties.",
+      txSummary: "Transacties",
+      paymentPlanBadge: "Betalingsregeling",
+      paymentPills: { Settled:"Verwerkt", Pending:"In verwerking", Rejected:"Afgewezen" },
+      invoicePills: { paid:"Betaald", partial:"Deels betaald", announced:"Aangekondigd", processing:"In behandeling", rejected:"Afgewezen" },
+      planLinePills: { Paid:"Betaald", Scheduled:"Gepland", Pending:"In verwerking", Rejected:"Afgewezen" },
+      resultMatched: "Matched",
+      creditApplied: "Credit verrekend",
+      darkMode: "Dark mode"
+    },
+    en: {
+      searchPlaceholder: "Search invoice, payment, plan or credit…",
+      tabs: { invoices:"Invoices", payments:"Payments", plans:"Payment plans", credits:"Credit/Debit" },
+      subLeft: "Rows: N/A  Dunning: N/A",
+      openTotal: "Total outstanding",
+      headers: {
+        invoice:"Invoice", invoiceDate:"Invoice date", dueDate:"Due date", amount:"Amount", open:"Outstanding",
+        status:"Status", dunning:"Dunning", tx:"Transactions",
+        payment:"Payment", payDate:"Date", method:"Method", payStatus:"Status", payAmount:"Amount", linked:"Linked invoices",
+        plan:"Plan", planInvoices:"Invoices", planStatus:"Status", planTotal:"Total", schedule:"Installments & debits",
+        credit:"Credit", creditDate:"Date added", creditType:"Type", creditAmount:"Amount", creditStatus:"Status", creditLinked:"Applied to / planned for"
+      },
+      invoiceNameMonth: (m) => `Invoice ${m}`,
+      months: ["January","February","March","April","May","June","July","August","September","October","November","December"],
+      dunningOn: "On", dunningOff:"Off",
+      dunningLabel: "Dunning",
+      levelLabel: "Level",
+      txNone: "No transactions.",
+      txSummary: "Transactions",
+      paymentPlanBadge: "Payment plan",
+      paymentPills: { Settled:"Processed", Pending:"Processing", Rejected:"Rejected" },
+      invoicePills: { paid:"Paid", partial:"Partially paid", announced:"Announced", processing:"Processing", rejected:"Rejected" },
+      planLinePills: { Paid:"Paid", Scheduled:"Scheduled", Pending:"Processing", Rejected:"Rejected" },
+      resultMatched: "Matched",
+      creditApplied: "Credit applied",
+      darkMode: "Dark mode"
+    }
+  };
+
+  let lang = localStorage.getItem("easy-ledger-lang") || "nl";
+  function t(){ return I18N[lang]; }
+
+  function setLang(next){
+    lang = next;
+    localStorage.setItem("easy-ledger-lang", lang);
+    document.getElementById("lang-nl").classList.toggle("active", lang==="nl");
+    document.getElementById("lang-en").classList.toggle("active", lang==="en");
+
+    // update static UI labels
+    document.getElementById("tab-invoices").textContent = t().tabs.invoices;
+    document.getElementById("tab-payments").textContent = t().tabs.payments;
+    document.getElementById("tab-plans").textContent = t().tabs.plans;
+    document.getElementById("tab-credits").textContent = t().tabs.credits;
+
+    document.getElementById("subLeft").textContent = t().subLeft;
+    document.getElementById("lblOpenTotal").textContent = t().openTotal;
+    document.getElementById("q").placeholder = t().searchPlaceholder;
+    document.getElementById("lblDarkMode").textContent = t().darkMode;
+
+    // headers
+    const h = t().headers;
+    document.getElementById("thInvoice").textContent = h.invoice;
+    document.getElementById("thInvoiceDate").textContent = h.invoiceDate;
+    document.getElementById("thDueDate").textContent = h.dueDate;
+    document.getElementById("thAmount").textContent = h.amount;
+    document.getElementById("thOpen").textContent = h.open;
+    document.getElementById("thStatus").textContent = h.status;
+    document.getElementById("thDunning").textContent = h.dunning;
+    document.getElementById("thTx").textContent = h.tx;
+
+    document.getElementById("thPayment").textContent = h.payment;
+    document.getElementById("thPayDate").textContent = h.payDate;
+    document.getElementById("thMethod").textContent = h.method;
+    document.getElementById("thPayStatus").textContent = h.payStatus;
+    document.getElementById("thPayAmount").textContent = h.payAmount;
+    document.getElementById("thLinked").textContent = h.linked;
+
+    document.getElementById("thPlan").textContent = h.plan;
+    document.getElementById("thPlanInvoices").textContent = h.planInvoices;
+    document.getElementById("thPlanStatus").textContent = h.planStatus;
+    document.getElementById("thPlanTotal").textContent = h.planTotal;
+    document.getElementById("thSchedule").textContent = h.schedule;
+
+    document.getElementById("thCredit").textContent = h.credit;
+    document.getElementById("thCreditDate").textContent = h.creditDate;
+    document.getElementById("thCreditType").textContent = h.creditType;
+    document.getElementById("thCreditAmount").textContent = h.creditAmount;
+    document.getElementById("thCreditStatus").textContent = h.creditStatus;
+    document.getElementById("thCreditLinked").textContent = h.creditLinked;
+
+    // rerender current tab
+    setActiveTab(currentTab);
+  }
+
+  document.getElementById("lang-nl").addEventListener("click", () => setLang("nl"));
+  document.getElementById("lang-en").addEventListener("click", () => setLang("en"));
+
   // ===== Dark mode (persist) =====
   const THEME_KEY = "easy-ledger-theme";
   function applyTheme(theme){
@@ -252,7 +382,12 @@
 
   // ===== Helpers =====
   const euro = n => (n<0?"-":"") + "€ " + Math.abs(n).toFixed(2).replace(".", ",");
-  const fmtDate = d => d.split("-").reverse().join("-");
+  const usd = n => (n<0?"-":"") + "$" + Math.abs(n).toFixed(2);
+  const money = n => (lang==="nl" ? euro(n) : usd(n));
+  const fmtDate = d => {
+    const [y,m,dd] = d.split("-");
+    return lang==="nl" ? `${dd}-${m}-${y}` : `${m}/${dd}/${y}`;
+  };
   function pill(label, cls){ return `<span class="pill ${cls}"><span class="dot"></span>${label}</span>`; }
   function fixInvoiceId(raw){
     let s = String(raw).replace(/\D/g, "");
@@ -260,12 +395,11 @@
     if (!s.startsWith("5")) s = "5" + s.slice(1);
     return s;
   }
-  function monthNameNL(dateStr){
+  function monthName(dateStr){
     const m = Number((dateStr||"").split("-")[1] || 1);
-    const names = ["Januari","Februari","Maart","April","Mei","Juni","Juli","Augustus","September","Oktober","November","December"];
-    return names[m-1] || "";
+    return t().months[m-1] || "";
   }
-  function invoiceName(inv){ return `Factuur ${monthNameNL(inv.docDate)}`; }
+  function invoiceName(inv){ return t().invoiceNameMonth(monthName(inv.docDate)); }
 
   // ===== Data =====
   const invoices = [
@@ -309,7 +443,7 @@
     {
       id:"PAY-20260228-BULK",
       date:"2026-02-28",
-      method:"Bankoverschrijving",
+      method:"Bank transfer",
       status:"Settled",
       amount:200.00,
       allocations:[
@@ -320,7 +454,7 @@
     {
       id:"PAY-20260219-0001",
       date:"2026-02-19",
-      method:"Incasso (SEPA DD)",
+      method:"Direct debit (SEPA DD)",
       status:"Pending",
       amount:146.53,
       allocations:[{invoiceId:fixInvoiceId("901617100121"), amount:146.53}]
@@ -328,7 +462,7 @@
     {
       id:"PAY-20260120-0009",
       date:"2026-01-20",
-      method:"Incasso (SEPA DD)",
+      method:"Direct debit (SEPA DD)",
       status:"Settled",
       amount:120.73,
       allocations:[{invoiceId:fixInvoiceId("901617100122"), amount:120.73}]
@@ -336,7 +470,7 @@
     {
       id:"PAY-20251210-SHOP",
       date:"2025-12-10",
-      method:"Betaling in shop",
+      method:"Payment in shop",
       status:"Settled",
       amount:35.00,
       allocations:[
@@ -388,7 +522,7 @@
   function invoiceHasShopPayment(invoiceId){
     return payments.some(p =>
       p.status === "Settled" &&
-      (p.method || "").toLowerCase().includes("betaling in shop") &&
+      (p.method || "").toLowerCase().includes("shop") &&
       (p.allocations || []).some(a => a.invoiceId === invoiceId && a.amount > 0)
     );
   }
@@ -397,12 +531,12 @@
   }
   function invoiceStatus(inv){
     const open = invoiceOpenAmount(inv);
-    if(open === 0) return {key:"paid", label:"Betaald"};
-    if(open > 0 && invoiceHasShopPayment(inv.id)) return {key:"partial", label:"Deels betaald"};
-    if(planByInvoiceId(inv.id)) return {key:"processing", label:"In behandeling"};
-    if(inv.phase === "rejected") return {key:"rejected", label:"Afgewezen"};
-    if(inv.phase === "announced") return {key:"announced", label:"Aangekondigd"};
-    return {key:"processing", label:"In behandeling"};
+    if(open === 0) return {key:"paid", label:t().invoicePills.paid};
+    if(open > 0 && invoiceHasShopPayment(inv.id)) return {key:"partial", label:t().invoicePills.partial};
+    if(planByInvoiceId(inv.id)) return {key:"processing", label:t().invoicePills.processing};
+    if(inv.phase === "rejected") return {key:"rejected", label:t().invoicePills.rejected};
+    if(inv.phase === "announced") return {key:"announced", label:t().invoicePills.announced};
+    return {key:"processing", label:t().invoicePills.processing};
   }
   function dunningInfo(inv){
     const st = invoiceStatus(inv).key;
@@ -420,32 +554,31 @@
     const d = dunningInfo(inv);
     return `
       <div class="dunning">
-        <span class="tag ${d.mode === "on" ? "dunning-on" : "dunning-off"}">Dunning: ${d.mode === "on" ? "Aan" : "Uit"}</span>
-        <span class="tag level">Level: ${d.level}</span>
+        <span class="tag ${d.mode === "on" ? "dunning-on" : "dunning-off"}">${t().dunningLabel}: ${d.mode === "on" ? t().dunningOn : t().dunningOff}</span>
+        <span class="tag level">${t().levelLabel}: ${d.level}</span>
       </div>
     `;
   }
   function paymentStatusPill(status){
+    const map = t().paymentPills;
     switch(status){
-      case "Settled": return pill("Verwerkt", "success");
-      case "Pending": return pill("In verwerking", "warning");
-      case "Rejected": return pill("Afgewezen", "danger");
+      case "Settled": return pill(map.Settled, "success");
+      case "Pending": return pill(map.Pending, "warning");
+      case "Rejected": return pill(map.Rejected, "danger");
       default: return pill(status, "neutral");
     }
   }
   function creditStatusPill(status){
-    switch(status){
-      case "Verrekend": return pill("Verrekend", "success");
-      case "Gepland": return pill("Gepland", "warning");
-      default: return pill(status, "neutral");
-    }
+    // demo only uses applied
+    return status === "Verrekend" ? pill(lang==="nl" ? "Verrekend" : "Applied", "success") : pill(status, "neutral");
   }
   function planLineStatusPill(status){
+    const m = t().planLinePills;
     switch(status){
-      case "Paid": return pill("Betaald", "success");
-      case "Scheduled": return pill("Gepland", "neutral");
-      case "Pending": return pill("In verwerking", "warning");
-      case "Rejected": return pill("Afgewezen", "danger");
+      case "Paid": return pill(m.Paid, "success");
+      case "Scheduled": return pill(m.Scheduled, "neutral");
+      case "Pending": return pill(m.Pending, "warning");
+      case "Rejected": return pill(m.Rejected, "danger");
       default: return pill(status, "neutral");
     }
   }
@@ -462,36 +595,36 @@
       if(c.status !== "Verrekend") continue;
       for(const a of (c.allocations || [])){
         if(a.invoiceId !== invoiceId) continue;
-        txs.push({ doc:c.id, date:c.createdDate, type:"Credit", amount:-Math.abs(a.amount), result:"Credit verrekend" });
+        txs.push({ doc:c.id, date:c.createdDate, type:"Credit", amount:-Math.abs(a.amount), result:t().creditApplied });
       }
     }
     for(const a of planPaidAllocations()){
       if(a.invoiceId !== invoiceId) continue;
-      txs.push({ doc:a.doc, date:a.date, type:`Betalingsregeling (${a.planId})`, amount:-Math.abs(a.amount), result:"Paid" });
+      txs.push({ doc:a.doc, date:a.date, type:`${t().tabs.plans} (${a.planId})`, amount:-Math.abs(a.amount), result:t().planLinePills.Paid });
     }
-    if(!txs.length) return `<div class="muted">Geen transacties.</div>`;
-    const resultText = (s) => (s === "Settled" ? "Matched" : s);
+    if(!txs.length) return `<div class="muted">${t().txNone}</div>`;
+    const resultText = (s) => (s === "Settled" ? t().resultMatched : s);
     txs.sort((a,b) => b.date.localeCompare(a.date));
     return `
       <div class="tx">
         <table>
           <thead>
             <tr>
-              <th style="width:200px;">Transactie</th>
-              <th style="width:120px;">Datum</th>
-              <th style="width:240px;">Type</th>
-              <th class="right" style="width:120px;">Bedrag</th>
-              <th>Resultaat</th>
+              <th style="width:200px;">${t().headers.tx}</th>
+              <th style="width:120px;">${t().headers.payDate}</th>
+              <th style="width:240px;">${t().headers.method}</th>
+              <th class="right" style="width:120px;">${t().headers.amount}</th>
+              <th>${t().headers.status}</th>
             </tr>
           </thead>
           <tbody>
-            ${txs.map(t => `
+            ${txs.map(txx => `
               <tr>
-                <td class="mono"><a href="#pay-${t.doc}">${t.doc}</a></td>
-                <td>${fmtDate(t.date)}</td>
-                <td>${t.type}</td>
-                <td class="right mono amount">${euro(t.amount)}</td>
-                <td>${resultText(t.result)}</td>
+                <td class="mono"><a href="#pay-${txx.doc}">${txx.doc}</a></td>
+                <td>${fmtDate(txx.date)}</td>
+                <td>${txx.type}</td>
+                <td class="right mono amount">${money(txx.amount)}</td>
+                <td>${resultText(txx.result)}</td>
               </tr>
             `).join("")}
           </tbody>
@@ -516,25 +649,25 @@
             <div class="invCell">
               <span class="invName">${invoiceName(inv)}</span>
               <a class="mono invId" href="#inv-${inv.id}">${inv.id}</a>
-              ${plan ? `<span class="badge" onclick="openPlansTab('${plan.id}')" title="Bekijk betalingsregeling">Betalingsregeling</span>` : ``}
+              ${plan ? `<span class="badge" onclick="openPlansTab('${plan.id}')" title="${t().paymentPlanBadge}">${t().paymentPlanBadge}</span>` : ``}
             </div>
           </td>
           <td>${fmtDate(inv.docDate)}</td>
           <td>${fmtDate(inv.dueDate)}</td>
-          <td class="right mono amount">${euro(inv.amount)}</td>
-          <td class="right mono amount">${euro(open)}</td>
+          <td class="right mono amount">${money(inv.amount)}</td>
+          <td class="right mono amount">${money(open)}</td>
           <td>${statusPillFromInvoice(inv)}</td>
           <td>${dunningCell(inv)}</td>
           <td>
             <details>
-              <summary>Transacties</summary>
+              <summary>${t().txSummary}</summary>
               ${txTable(inv.id)}
             </details>
           </td>
         </tr>
       `;
     }).join("");
-    document.getElementById("openTotal").textContent = euro(computeOpenTotal());
+    document.getElementById("openTotal").textContent = money(computeOpenTotal());
   }
 
   function renderPayments(filterText){
@@ -545,19 +678,18 @@
       p.status.toLowerCase().includes(q) ||
       (p.allocations || []).some(a => a.invoiceId.toLowerCase().includes(q))
     );
-
     document.getElementById("paymentRows").innerHTML = filtered.map(p => {
       const alloc = (p.allocations || []);
       const allocHtml = alloc.length
         ? `<ul style="margin:0; padding-left:18px;">
             ${alloc.map(a => `
               <li>
-                Factuur <a class="mono" href="#inv-${a.invoiceId}">${a.invoiceId}</a>
-                — <span class="mono">${euro(a.amount)}</span>
+                ${t().headers.invoice} <a class="mono" href="#inv-${a.invoiceId}">${a.invoiceId}</a>
+                — <span class="mono">${money(a.amount)}</span>
               </li>
             `).join("")}
           </ul>`
-        : `<span class="muted">Niet gekoppeld</span>`;
+        : `<span class="muted">—</span>`;
 
       return `
         <tr id="pay-${p.id}">
@@ -565,12 +697,12 @@
           <td>${fmtDate(p.date)}</td>
           <td>${p.method}</td>
           <td>${paymentStatusPill(p.status)}</td>
-          <td class="right mono amount">${euro(p.amount)}</td>
+          <td class="right mono amount">${money(p.amount)}</td>
           <td>${allocHtml}</td>
         </tr>
       `;
     }).join("");
-    document.getElementById("openTotal").textContent = euro(computeOpenTotal());
+    document.getElementById("openTotal").textContent = money(computeOpenTotal());
   }
 
   function scheduleTable(plan){
@@ -579,12 +711,12 @@
         <table>
           <thead>
             <tr>
-              <th style="width:90px;">Termijn</th>
-              <th style="width:120px;">Vervaldatum</th>
-              <th style="width:160px;">Methode</th>
-              <th style="width:160px;">Afschrijving</th>
-              <th class="right" style="width:120px;">Bedrag</th>
-              <th style="width:220px;">Status</th>
+              <th style="width:90px;">#</th>
+              <th style="width:120px;">${t().headers.dueDate}</th>
+              <th style="width:160px;">${t().headers.method}</th>
+              <th style="width:160px;">Ref</th>
+              <th class="right" style="width:120px;">${t().headers.amount}</th>
+              <th style="width:220px;">${t().headers.status}</th>
             </tr>
           </thead>
           <tbody>
@@ -594,7 +726,7 @@
                 <td>${fmtDate(s.dueDate)}</td>
                 <td>${s.method}</td>
                 <td class="mono">${s.doc}</td>
-                <td class="right mono amount">${euro(-Math.abs((s.allocations||[]).reduce((x,a)=>x+a.amount,0)))}</td>
+                <td class="right mono amount">${money(-Math.abs((s.allocations||[]).reduce((x,a)=>x+a.amount,0)))}</td>
                 <td>${planLineStatusPill(s.status)}</td>
               </tr>
             `).join("")}
@@ -611,7 +743,6 @@
       (p.invoiceIds || []).some(id => id.toLowerCase().includes(q)) ||
       (p.status || "").toLowerCase().includes(q)
     );
-
     document.getElementById("planRows").innerHTML = filtered.map(plan => {
       const invLinks = (plan.invoiceIds || []).map(id => `<a class="mono" href="#inv-${id}">${id}</a>`).join(", ");
       return `
@@ -619,18 +750,17 @@
           <td class="mono"><a href="#plan-${plan.id}">${plan.id}</a></td>
           <td>${invLinks}</td>
           <td>${pill(plan.status, "neutral")}</td>
-          <td class="right mono amount">${euro(plan.total)}</td>
+          <td class="right mono amount">${money(plan.total)}</td>
           <td>
             <details open>
-              <summary>Termijnen</summary>
+              <summary>${lang==="nl" ? "Termijnen" : "Installments"}</summary>
               ${scheduleTable(plan)}
             </details>
           </td>
         </tr>
       `;
     }).join("");
-
-    document.getElementById("openTotal").textContent = euro(computeOpenTotal());
+    document.getElementById("openTotal").textContent = money(computeOpenTotal());
   }
 
   function renderCredits(filterText){
@@ -641,13 +771,12 @@
       (c.status||"").toLowerCase().includes(q) ||
       (c.allocations||[]).some(a => (a.invoiceId||"").toLowerCase().includes(q))
     );
-
     document.getElementById("creditRows").innerHTML = filtered.map(c => {
       const linkHtml = `<ul style="margin:0; padding-left:18px;">
         ${(c.allocations||[]).map(a => `
           <li>
-            Factuur <a class="mono" href="#inv-${a.invoiceId}">${a.invoiceId}</a>
-            — <span class="mono">${euro(a.amount)}</span>
+            ${t().headers.invoice} <a class="mono" href="#inv-${a.invoiceId}">${a.invoiceId}</a>
+            — <span class="mono">${money(a.amount)}</span>
           </li>
         `).join("")}
       </ul>`;
@@ -656,25 +785,26 @@
           <td class="mono">${c.id}</td>
           <td>${fmtDate(c.createdDate)}</td>
           <td>${c.type}</td>
-          <td class="right mono amount">${euro(c.amount)}</td>
+          <td class="right mono amount">${money(c.amount)}</td>
           <td>${creditStatusPill(c.status)}</td>
           <td>${linkHtml}</td>
         </tr>
       `;
     }).join("");
-
-    document.getElementById("openTotal").textContent = euro(computeOpenTotal());
+    document.getElementById("openTotal").textContent = money(computeOpenTotal());
   }
 
   // ===== Tabs + search =====
+  let currentTab = "invoices";
+
   function setActiveTab(tab){
+    currentTab = tab;
     const map = [
       ["invoices","tab-invoices","panel-invoices"],
       ["payments","tab-payments","panel-payments"],
       ["plans","tab-plans","panel-plans"],
       ["credits","tab-credits","panel-credits"],
     ];
-
     for(const [key, btnId, panelId] of map){
       const isActive = (tab === key);
       const btn = document.getElementById(btnId);
@@ -683,7 +813,6 @@
       btn.setAttribute("aria-selected", isActive ? "true" : "false");
       panel.classList.toggle("hidden", !isActive);
     }
-
     const q = document.getElementById("q").value;
     if(tab === "invoices") applyFilterInvoices(q);
     else if(tab === "payments") renderPayments(q);
@@ -698,11 +827,9 @@
     ));
   }
 
-  // IMPORTANT FIX: openPlansTab syntax + scroll
   function openPlansTab(planId){
     setActiveTab("plans");
     if(planId){
-      // wait for render
       setTimeout(() => {
         const el = document.getElementById(`plan-${planId}`);
         if(el) el.scrollIntoView({behavior:"smooth", block:"center"});
@@ -711,26 +838,21 @@
   }
   window.openPlansTab = openPlansTab;
 
-  // search routing
   document.getElementById("q").addEventListener("input", (e) => {
     const q = e.target.value;
-    const isInv = !document.getElementById("panel-invoices").classList.contains("hidden");
-    const isPay = !document.getElementById("panel-payments").classList.contains("hidden");
-    const isPlans = !document.getElementById("panel-plans").classList.contains("hidden");
-    if(isInv) applyFilterInvoices(q);
-    else if(isPay) renderPayments(q);
-    else if(isPlans) renderPlans(q);
+    if(currentTab === "invoices") applyFilterInvoices(q);
+    else if(currentTab === "payments") renderPayments(q);
+    else if(currentTab === "plans") renderPlans(q);
     else renderCredits(q);
   });
 
-  // tabs
   document.getElementById("tab-invoices").addEventListener("click", () => setActiveTab("invoices"));
   document.getElementById("tab-payments").addEventListener("click", () => setActiveTab("payments"));
   document.getElementById("tab-plans").addEventListener("click", () => setActiveTab("plans"));
   document.getElementById("tab-credits").addEventListener("click", () => setActiveTab("credits"));
 
-  // init
-  setActiveTab("invoices");
+  // init language + initial render
+  setLang(lang);
 </script>
 </body>
 </html>
