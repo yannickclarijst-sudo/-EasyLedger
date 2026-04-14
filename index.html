@@ -291,7 +291,8 @@
       txNone: "No transactions.", txSummary: "Transactions",
       paymentPlanBadge: "Payment plan",
       paymentPills: { Settled:"Processed", Pending:"Processing", Rejected:"Rejected" },
-      invoicePills: { paid:"Paid", partial:"Partially paid", announced:"Announced", processing:"Processing", rejected:"Rejected" },
+      /* CHANGE REQUEST: processing must be 'Pending' in English */
+      invoicePills: { paid:"Paid", partial:"Partially paid", announced:"Announced", processing:"Pending", rejected:"Rejected" },
       planLinePills: { Paid:"Paid", Scheduled:"Scheduled", Pending:"Processing", Rejected:"Rejected" },
       resultMatched: "Matched",
       creditApplied: "Credit applied",
@@ -318,7 +319,7 @@
 
   // ===== Helpers =====
   const euro = n => (n<0?"-":"") + "€ " + Math.abs(n).toFixed(2).replace(".", ",");
-  const money = n => euro(n); // <-- always EURO, also in English
+  const money = n => euro(n); // always EUR
   const fmtDate = d => {
     const [y,m,dd] = d.split("-");
     return lang==="nl" ? `${dd}-${m}-${y}` : `${m}/${dd}/${y}`;
