@@ -112,6 +112,15 @@
     .invName{font-weight:700;}
     .invId{color:var(--muted);font-size:12px;}
 
+    /* PDF link styling */
+    .pdfLink{display:inline-flex;align-items:center;gap:6px;}
+    .pdfIcon{
+      width:14px;height:14px;flex:0 0 auto;
+      color:var(--red);
+    }
+    .pdfIcon path{fill:currentColor;}
+    .pdfHint{color:var(--muted);}
+
     /* toggles */
     .toggleGroup{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
     .switch{display:inline-flex;align-items:center;gap:10px;color:var(--muted);font-size:13px;user-select:none;}
@@ -182,7 +191,7 @@
         <table>
           <thead>
             <tr>
-              <th style="width:320px;" id="thInvoice">Factuur</th>
+              <th style="width:360px;" id="thInvoice">Factuur</th>
               <th style="width:120px;" id="thInvoiceDate">Factuurdatum</th>
               <th style="width:120px;" id="thDueDate">Vervaldatum</th>
               <th class="right" style="width:120px;" id="thAmount">Bedrag</th>
@@ -271,7 +280,8 @@
       planLinePills: { Paid:"Betaald", Scheduled:"Gepland", Pending:"In verwerking", Rejected:"Afgewezen" },
       resultMatched: "Matched",
       creditApplied: "Credit verrekend",
-      darkMode: "Dark mode"
+      darkMode: "Dark mode",
+      openPdf: "Open PDF"
     },
     en: {
       searchPlaceholder: "Search invoice, payment, plan or credit…",
@@ -291,12 +301,12 @@
       txNone: "No transactions.", txSummary: "Transactions",
       paymentPlanBadge: "Payment plan",
       paymentPills: { Settled:"Processed", Pending:"Processing", Rejected:"Rejected" },
-      /* CHANGE REQUEST: processing must be 'Pending' in English */
       invoicePills: { paid:"Paid", partial:"Partially paid", announced:"Announced", processing:"Pending", rejected:"Rejected" },
       planLinePills: { Paid:"Paid", Scheduled:"Scheduled", Pending:"Processing", Rejected:"Rejected" },
       resultMatched: "Matched",
       creditApplied: "Credit applied",
-      darkMode: "Dark mode"
+      darkMode: "Dark mode",
+      openPdf: "Open PDF"
     }
   };
 
@@ -336,6 +346,13 @@
     return t().months[m-1] || "";
   }
   function invoiceName(inv){ return t().invoiceNameMonth(monthName(inv.docDate)); }
+
+  // Inline SVG PDF icon
+  const pdfIconSvg = `
+    <svg class="pdfIcon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M6 2h9l5 5v15a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm8 1.5V8h4.5L14 3.5zM7 14h2.2c1.5 0 2.3.8 2.3 2s-.8 2-2.3 2H8.5v2H7v-6zm2.1 2.7c.6 0 1-.3 1-.7s-.4-.7-1-.7H8.5v1.4h.6zM12.2 14h2.1c1.9 0 3.2 1.2 3.2 3s-1.3 3-3.2 3h-2.1v-6zm2.1 4.5c1 0 1.7-.6 1.7-1.5s-.7-1.5-1.7-1.5h-.6v3h.6zM18.3 14H22v1.5h-2.2V16H22v1.5h-2.2V20h-1.5v-6z"/>
+    </svg>
+  `;
 
   // ===== Data =====
   const invoices = [
@@ -533,6 +550,14 @@
     `;
   }
 
+  // Demo PDF URL generator (replace with real Salesforce/CRM link later)
+  function invoicePdfUrl(invoiceId){
+    // simple placeholder path in GitHub Pages; create /pdf/<id>.pdf if you want real files
+    return `pdf/${invoiceId}.pdf`;
+  }
+
+  let currentTab = "invoices";
+
   function sortInvoicesNewestFirst(list){ return [...list].sort((a,b) => b.docDate.localeCompare(a.docDate)); }
 
   function renderInvoices(list){
@@ -540,12 +565,18 @@
     document.getElementById("rows").innerHTML = sorted.map(inv => {
       const plan = paymentPlans.find(p => (p.invoiceIds || []).includes(inv.id));
       const open = invoiceOpenAmount(inv);
+      const pdfUrl = invoicePdfUrl(inv.id);
       return `
         <tr id="inv-${inv.id}">
           <td>
             <div class="invCell">
               <span class="invName">${invoiceName(inv)}</span>
-              <a class="mono invId" href="#inv-${inv.id}">${inv.id}</a>
+
+              <a class="mono invId pdfLink" href="${pdfUrl}" target="_blank" rel="noopener" title="${t().openPdf}">
+                ${pdfIconSvg}
+                <span>${inv.id}</span>
+              </a>
+
               ${plan ? `<span class="badge" onclick="openPlansTab('${plan.id}')" title="${t().paymentPlanBadge}">${t().paymentPlanBadge}</span>` : ``}
             </div>
           </td>
@@ -690,8 +721,6 @@
     document.getElementById("openTotal").textContent = money(computeOpenTotal());
   }
 
-  // ===== Tabs + search =====
-  let currentTab = "invoices";
   function setActiveTab(tab){
     currentTab = tab;
     const map = [
@@ -714,12 +743,14 @@
     else if(tab === "plans") renderPlans(q);
     else renderCredits(q);
   }
+
   function applyFilterInvoices(filterText){
     const q = (filterText ?? "").trim().toLowerCase();
     renderInvoices(invoices.filter(inv =>
       inv.id.toLowerCase().includes(q) || invoiceName(inv).toLowerCase().includes(q)
     ));
   }
+
   function openPlansTab(planId){
     setActiveTab("plans");
     if(planId){
