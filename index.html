@@ -23,11 +23,11 @@
     header h1{font-size:18px;margin:0;}
     .toolbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
 
-    input[type="search"]{
-      padding:10px 12px;border:1px solid var(--line);border-radius:10px;min-width:280px;
+    input[type="search"], input[type="text"]{
+      padding:10px 12px;border:1px solid var(--line);border-radius:10px;min-width:220px;
       background:transparent;color:var(--text);
     }
-    input[type="search"]::placeholder{color:var(--muted);}
+    input::placeholder{color:var(--muted);}
 
     .sub{padding:0 16px 16px;color:var(--muted);font-size:13px;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;}
     .kpis{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
@@ -112,12 +112,10 @@
     .invName{font-weight:700;}
     .invId{color:var(--muted);font-size:12px;}
 
-    /* PDF link styling */
     .pdfLink{display:inline-flex;align-items:center;gap:6px;}
     .pdfIcon{width:14px;height:14px;flex:0 0 auto;color:var(--red);}
     .pdfIcon path{fill:currentColor;}
 
-    /* toggles */
     .toggleGroup{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
     .switch{display:inline-flex;align-items:center;gap:10px;color:var(--muted);font-size:13px;user-select:none;}
     .switch input{display:none;}
@@ -142,18 +140,24 @@
     .langbtn.active{border-color:rgba(37,99,235,.35);box-shadow:0 0 0 3px rgba(37,99,235,.10);}
     html[data-theme="dark"] .langbtn.active{box-shadow:0 0 0 3px rgba(96,165,250,.18);}
 
-    /* validation banner */
-    .warn{
-      margin:0 16px 16px;
-      padding:10px 12px;
-      border:1px solid rgba(239,68,68,.35);
-      background:rgba(239,68,68,.08);
-      border-radius:10px;
-      color:var(--text);
-      display:none;
-      font-size:13px;
+    .customerBox{
+      display:flex;gap:10px;align-items:center;flex-wrap:wrap;
+      padding:0 16px 8px;
     }
-    .warn b{color:var(--red);}
+    .customerTag{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:6px 10px;border-radius:999px;border:1px solid var(--line);
+      background:color-mix(in srgb, var(--card), #fff 6%);
+      font-size:12px;color:var(--muted);
+    }
+    html[data-theme="dark"] .customerTag{background:rgba(148,163,184,.06);}
+    .btn{
+      border:1px solid var(--line);background:transparent;color:var(--text);
+      padding:10px 12px;border-radius:10px;font-size:13px;cursor:pointer;
+    }
+    .btn:hover{background:color-mix(in srgb, var(--card), #60a5fa 8%);}
+    html[data-theme="dark"] .btn:hover{background:rgba(96,165,250,.12);}
+    .error{color:var(--red);font-size:12px;}
   </style>
 </head>
 <body>
@@ -189,14 +193,20 @@
         </div>
       </header>
 
+      <!-- NEW: customer lookup -->
+      <div class="customerBox">
+        <input id="customerNo" type="text" inputmode="numeric" placeholder="Klantnummer (bijv. 12345678)" />
+        <button class="btn" id="btnLookup" type="button">Zoek klant</button>
+        <span class="customerTag" id="customerInfo">Klant: <b class="mono" id="activeCustomer">12345678</b> · Product: <b id="activeProduct">Odido</b></span>
+        <span class="error" id="customerError"></span>
+      </div>
+
       <div class="sub">
         <div id="subLeft">Regels: N/A  Dunning: N/A</div>
         <div class="kpis">
           <div class="kpi"><span id="lblOpenTotal">Totaal openstaand</span><b id="openTotal">€ 0,00</b></div>
         </div>
       </div>
-
-      <div id="warn" class="warn"></div>
 
       <div id="panel-invoices" class="tabpanel">
         <table>
@@ -266,67 +276,44 @@
   </div>
 
 <script>
+  // Language (kept short; labels only where needed for this change)
   const I18N = {
     nl: {
       searchPlaceholder: "Zoek op factuur, betaling, plan of credit…",
-      tabs: { invoices:"Facturen", payments:"Betalingen", plans:"Betalingsregelingen", credits:"Credit/Debit" },
-      subLeft: "Regels: N/A  Dunning: N/A",
-      openTotal: "Totaal openstaand",
-      headers: {
-        invoice:"Factuur", invoiceDate:"Factuurdatum", dueDate:"Vervaldatum", amount:"Bedrag", open:"Openstaand",
-        status:"Status", dunning:"Dunning", tx:"Transacties",
-        payment:"Betaling", payDate:"Datum", method:"Methode", payStatus:"Status", payAmount:"Bedrag", linked:"Gekoppeld aan facturen",
-        plan:"Plan", planInvoices:"Facturen", planStatus:"Status", planTotal:"Totaal", schedule:"Termijnen & afschrijvingen",
-        credit:"Credit", creditDate:"Datum toegevoegd", creditType:"Type", creditAmount:"Bedrag", creditStatus:"Status", creditLinked:"Verrekend met / gepland op"
-      },
-      invoiceNameMonth: (m) => `Factuur ${m}`,
-      months: ["Januari","Februari","Maart","April","Mei","Juni","Juli","Augustus","September","Oktober","November","December"],
-      dunningOn: "Aan", dunningOff:"Uit", dunningLabel: "Dunning", levelLabel: "Level",
-      txNone: "Geen transacties.", txSummary: "Transacties",
-      paymentPlanBadge: "Betalingsregeling",
-      paymentPills: { Settled:"Verwerkt", Pending:"In verwerking", Rejected:"Afgewezen" },
-      invoicePills: { paid:"Betaald", partial:"Deels betaald", announced:"Aangekondigd", pending:"In afschrijving", rejected:"Afgewezen", inplan:"In behandeling" },
-      planLinePills: { Paid:"Betaald", Scheduled:"Gepland", Pending:"In verwerking", Rejected:"Afgewezen" },
-      resultMatched: "Matched",
-      creditApplied: "Credit verrekend",
-      darkMode: "Dark mode",
+      customerPlaceholder: "Klantnummer (bijv. 12345678)",
+      lookup: "Zoek klant",
+      customer: "Klant",
+      product: "Product",
       openPdf: "Open PDF",
-      warnTitle: "Data-check:",
-      warnLine: (inv, invAmt, settled, credited, planned) =>
-        `${inv}: factuur ${invAmt}, settled payments ${settled}, credits ${credited} (verwacht incasso: ${planned}).`
+      paymentPlanBadge: "Betalingsregeling",
+      invoicePills: { paid:"Betaald", partial:"Deels betaald", announced:"Aangekondigd", pending:"In afschrijving", rejected:"Afgewezen", inplan:"In behandeling" },
+      paymentPills: { Settled:"Verwerkt", Pending:"In verwerking", Rejected:"Afgewezen" },
+      dunningLabel:"Dunning", dunningOn:"Aan", dunningOff:"Uit", levelLabel:"Level",
+      txNone:"Geen transacties.", txSummary:"Transacties",
+      openTotal:"Totaal openstaand",
+      resultMatched:"Matched",
+      creditApplied:"Credit verrekend"
     },
     en: {
       searchPlaceholder: "Search invoice, payment, plan or credit…",
-      tabs: { invoices:"Invoices", payments:"Payments", plans:"Payment plans", credits:"Credit/Debit" },
-      subLeft: "Rows: N/A  Dunning: N/A",
-      openTotal: "Total outstanding",
-      headers: {
-        invoice:"Invoice", invoiceDate:"Invoice date", dueDate:"Due date", amount:"Amount", open:"Outstanding",
-        status:"Status", dunning:"Dunning", tx:"Transactions",
-        payment:"Payment", payDate:"Date", method:"Method", payStatus:"Status", payAmount:"Amount", linked:"Linked invoices",
-        plan:"Plan", planInvoices:"Invoices", planStatus:"Status", planTotal:"Total", schedule:"Installments & debits",
-        credit:"Credit", creditDate:"Date added", creditType:"Type", creditAmount:"Amount", creditStatus:"Status", creditLinked:"Applied to / planned for"
-      },
-      invoiceNameMonth: (m) => `Invoice ${m}`,
-      months: ["January","February","March","April","May","June","July","August","September","October","November","December"],
-      dunningOn: "On", dunningOff:"Off", dunningLabel: "Dunning", levelLabel: "Level",
-      txNone: "No transactions.", txSummary: "Transactions",
-      paymentPlanBadge: "Payment plan",
-      paymentPills: { Settled:"Processed", Pending:"Processing", Rejected:"Rejected" },
-      invoicePills: { paid:"Paid", partial:"Partially paid", announced:"Announced", pending:"Pending", rejected:"Rejected", inplan:"Pending" },
-      planLinePills: { Paid:"Paid", Scheduled:"Scheduled", Pending:"Processing", Rejected:"Rejected" },
-      resultMatched: "Matched",
-      creditApplied: "Credit applied",
-      darkMode: "Dark mode",
+      customerPlaceholder: "Customer number (e.g. 12345678)",
+      lookup: "Find customer",
+      customer: "Customer",
+      product: "Product",
       openPdf: "Open PDF",
-      warnTitle: "Data check:",
-      warnLine: (inv, invAmt, settled, credited, planned) =>
-        `${inv}: invoice ${invAmt}, settled payments ${settled}, credits ${credited} (expected debit: ${planned}).`
+      paymentPlanBadge: "Payment plan",
+      invoicePills: { paid:"Paid", partial:"Partially paid", announced:"Announced", pending:"Pending", rejected:"Rejected", inplan:"Pending" },
+      paymentPills: { Settled:"Processed", Pending:"Processing", Rejected:"Rejected" },
+      dunningLabel:"Dunning", dunningOn:"On", dunningOff:"Off", levelLabel:"Level",
+      txNone:"No transactions.", txSummary:"Transactions",
+      openTotal:"Total outstanding",
+      resultMatched:"Matched",
+      creditApplied:"Credit applied"
     }
   };
 
   let lang = localStorage.getItem("easy-ledger-lang") || "nl";
-  function t(){ return I18N[lang]; }
+  const t = () => I18N[lang];
 
   // Theme
   const THEME_KEY = "easy-ledger-theme";
@@ -345,10 +332,8 @@
   // Helpers
   const euro = n => (n<0?"-":"") + "€ " + Math.abs(n).toFixed(2).replace(".", ",");
   const money = n => euro(n);
-  const fmtDate = d => {
-    const [y,m,dd] = d.split("-");
-    return lang==="nl" ? `${dd}-${m}-${y}` : `${m}/${dd}/${y}`;
-  };
+  const fmtDate = d => { const [y,m,dd]=d.split("-"); return lang==="nl" ? `${dd}-${m}-${y}` : `${m}/${dd}/${y}`; };
+  const round2 = n => Math.round((n + Number.EPSILON) * 100) / 100;
   function pill(label, cls){ return `<span class="pill ${cls}"><span class="dot"></span>${label}</span>`; }
   function fixInvoiceId(raw){
     let s = String(raw).replace(/\D/g, "");
@@ -356,12 +341,6 @@
     if (!s.startsWith("5")) s = "5" + s.slice(1);
     return s;
   }
-  function monthName(dateStr){
-    const m = Number((dateStr||"").split("-")[1] || 1);
-    return t().months[m-1] || "";
-  }
-  function invoiceName(inv){ return t().invoiceNameMonth(monthName(inv.docDate)); }
-  function round2(n){ return Math.round((n + Number.EPSILON) * 100) / 100; }
 
   const pdfIconSvg = `
     <svg class="pdfIcon" viewBox="0 0 24 24" aria-hidden="true">
@@ -369,64 +348,98 @@
     </svg>
   `;
 
-  // Data
-  const invoices = [
-    {id:fixInvoiceId("901617100120"), docDate:"2026-02-27", dueDate:"2026-03-20", amount:115.69, phase:"announced"},
-    {id:fixInvoiceId("901617100121"), docDate:"2026-01-27", dueDate:"2026-02-17", amount:146.53, phase:"processing"},
-    // December: credit 15 applied BEFORE debit => debit should be 105.73
-    {id:fixInvoiceId("901617100122"), docDate:"2025-12-27", dueDate:"2026-01-17", amount:120.73, phase:"announced"},
-    {id:fixInvoiceId("901617100123"), docDate:"2025-11-27", dueDate:"2025-12-18", amount:135.42, phase:"announced"},
-    {id:fixInvoiceId("901617100124"), docDate:"2025-10-27", dueDate:"2025-11-17", amount:129.95, phase:"announced"},
-    {id:fixInvoiceId("901617100125"), docDate:"2025-09-27", dueDate:"2025-10-18", amount:141.10, phase:"processing"},
-    {id:fixInvoiceId("901617100126"), docDate:"2025-08-27", dueDate:"2025-09-17", amount:135.25, phase:"announced"},
-  ];
+  // ===== Base dataset (the current scenario) =====
+  const baseLedger = {
+    invoices: [
+      {id:fixInvoiceId("901617100120"), docDate:"2026-02-27", dueDate:"2026-03-20", amount:115.69, phase:"announced"},
+      {id:fixInvoiceId("901617100121"), docDate:"2026-01-27", dueDate:"2026-02-17", amount:146.53, phase:"processing"},
+      {id:fixInvoiceId("901617100122"), docDate:"2025-12-27", dueDate:"2026-01-17", amount:120.73, phase:"announced"},
+      {id:fixInvoiceId("901617100123"), docDate:"2025-11-27", dueDate:"2025-12-18", amount:135.42, phase:"announced"},
+      {id:fixInvoiceId("901617100124"), docDate:"2025-10-27", dueDate:"2025-11-17", amount:129.95, phase:"announced"},
+      {id:fixInvoiceId("901617100125"), docDate:"2025-09-27", dueDate:"2025-10-18", amount:141.10, phase:"processing"},
+      {id:fixInvoiceId("901617100126"), docDate:"2025-08-27", dueDate:"2025-09-17", amount:135.25, phase:"announced"},
+    ],
+    paymentPlans: [
+      {
+        id:"PLAN-SEP-2025-09",
+        invoiceIds:[ fixInvoiceId("901617100125"), fixInvoiceId("901617100126") ],
+        status:"Actief",
+        total:141.10 + 135.25,
+        schedule:[
+          { term:1, dueDate:"2025-10-05", method:"Incasso", doc:"DD-PLAN-01", status:"Paid",
+            allocations:[
+              {invoiceId:fixInvoiceId("901617100125"), amount:47.03},
+              {invoiceId:fixInvoiceId("901617100126"), amount:45.09}
+            ]
+          },
+          { term:2, dueDate:"2025-11-05", method:"Incasso", doc:"DD-PLAN-02", status:"Scheduled", allocations:[] },
+          { term:3, dueDate:"2025-12-05", method:"Incasso", doc:"DD-PLAN-03", status:"Scheduled", allocations:[] }
+        ]
+      }
+    ],
+    credits: [
+      { id:"CR-20260105-001", createdDate:"2026-01-05", type:"Credit", amount:15.00, status:"Verrekend",
+        allocations:[{invoiceId: fixInvoiceId("901617100122"), amount:15.00}] },
+      { id:"CR-20260210-002", createdDate:"2026-02-10", type:"Credit", amount:20.00, status:"Verrekend",
+        allocations:[{invoiceId: fixInvoiceId("901617100120"), amount:20.00}] }
+    ],
+    payments: [
+      { id:"PAY-20260228-BULK", date:"2026-02-28", method:"Bank transfer", status:"Settled", amount:200.00,
+        allocations:[{invoiceId: fixInvoiceId("901617100123"), amount:80.00},{invoiceId: fixInvoiceId("901617100124"), amount:120.00}] },
+      { id:"PAY-20260219-0001", date:"2026-02-19", method:"Direct debit (SEPA DD)", status:"Pending", amount:146.53,
+        allocations:[{invoiceId:fixInvoiceId("901617100121"), amount:146.53}] },
+      /* FIX from earlier: December debit after credit = 105.73 */
+      { id:"PAY-20260120-0009", date:"2026-01-20", method:"Direct debit (SEPA DD)", status:"Settled", amount:105.73,
+        allocations:[{invoiceId:fixInvoiceId("901617100122"), amount:105.73}] },
+      { id:"PAY-20251210-SHOP", date:"2025-12-10", method:"Payment in shop", status:"Settled", amount:35.00,
+        allocations:[{invoiceId:fixInvoiceId("901617100123"), amount:25.00},{invoiceId:fixInvoiceId("901617100124"), amount:10.00}] }
+    ]
+  };
 
-  const paymentPlans = [
-    {
-      id:"PLAN-SEP-2025-09",
-      invoiceIds:[ fixInvoiceId("901617100125"), fixInvoiceId("901617100126") ],
-      status:"Actief",
-      total:141.10 + 135.25,
-      schedule:[
-        {
-          term:1, dueDate:"2025-10-05", method:"Incasso", doc:"DD-PLAN-01", status:"Paid",
-          allocations:[
-            {invoiceId:fixInvoiceId("901617100125"), amount:47.03},
-            {invoiceId:fixInvoiceId("901617100126"), amount:45.09}
-          ]
-        },
-        { term:2, dueDate:"2025-11-05", method:"Incasso", doc:"DD-PLAN-02", status:"Scheduled", allocations:[] },
-        { term:3, dueDate:"2025-12-05", method:"Incasso", doc:"DD-PLAN-03", status:"Scheduled", allocations:[] }
-      ]
+  // ===== Customer scenarios =====
+  // 12345678 -> current ledger with PDF links to local pdf/<invoiceId>.pdf
+  // 23456789 -> same ledger, but PDF link should open "Open BV"
+  const customers = {
+    "12345678": { customerNo:"12345678", product:"Odido", pdfMode:"local", ledger: baseLedger },
+    "23456789": { customerNo:"23456789", product:"Open BV", pdfMode:"openbv", ledger: baseLedger },
+  };
+
+  // Active context
+  let activeCustomerNo = "12345678";
+  let activeProduct = customers[activeCustomerNo].product;
+  let activePdfMode = customers[activeCustomerNo].pdfMode;
+
+  // Working data (swapped on lookup)
+  let invoices = [];
+  let paymentPlans = [];
+  let credits = [];
+  let payments = [];
+
+  function clone(obj){ return JSON.parse(JSON.stringify(obj)); }
+  function loadCustomer(customerNo){
+    const c = customers[customerNo];
+    if(!c) return false;
+    activeCustomerNo = c.customerNo;
+    activeProduct = c.product;
+    activePdfMode = c.pdfMode;
+
+    const ledger = clone(c.ledger);
+    invoices = ledger.invoices;
+    paymentPlans = ledger.paymentPlans;
+    credits = ledger.credits;
+    payments = ledger.payments;
+    return true;
+  }
+
+  function invoicePdfUrl(invoiceId){
+    if(activePdfMode === "openbv"){
+      // Placeholder for Open BV route
+      return `https://openbv.example/invoice/${encodeURIComponent(invoiceId)}`;
     }
-  ];
+    return `pdf/${invoiceId}.pdf`;
+  }
 
-  const credits = [
-    { id:"CR-20260105-001", createdDate:"2026-01-05", type:"Credit", amount:15.00, status:"Verrekend",
-      allocations:[{invoiceId: fixInvoiceId("901617100122"), amount:15.00}] },
-    { id:"CR-20260210-002", createdDate:"2026-02-10", type:"Credit", amount:20.00, status:"Verrekend",
-      allocations:[{invoiceId: fixInvoiceId("901617100120"), amount:20.00}] }
-  ];
-
-  const payments = [
-    { id:"PAY-20260228-BULK", date:"2026-02-28", method:"Bank transfer", status:"Settled", amount:200.00,
-      allocations:[{invoiceId: fixInvoiceId("901617100123"), amount:80.00},{invoiceId: fixInvoiceId("901617100124"), amount:120.00}] },
-
-    // This is the debit attempt => Pending (try to debit)
-    { id:"PAY-20260219-0001", date:"2026-02-19", method:"Direct debit (SEPA DD)", status:"Pending", amount:146.53,
-      allocations:[{invoiceId:fixInvoiceId("901617100121"), amount:146.53}] },
-
-    // FIX: December settled debit must be 105.73 (120.73 - 15.00 credit)
-    { id:"PAY-20260120-0009", date:"2026-01-20", method:"Direct debit (SEPA DD)", status:"Settled", amount:105.73,
-      allocations:[{invoiceId:fixInvoiceId("901617100122"), amount:105.73}] },
-
-    { id:"PAY-20251210-SHOP", date:"2025-12-10", method:"Payment in shop", status:"Settled", amount:35.00,
-      allocations:[{invoiceId:fixInvoiceId("901617100123"), amount:25.00},{invoiceId:fixInvoiceId("901617100124"), amount:10.00}] }
-  ];
-
-  function invoicePdfUrl(invoiceId){ return `pdf/${invoiceId}.pdf`; }
-
-  // Allocations
+  // ===== Business logic =====
   function settledPayments(){ return payments.filter(p => p.status === "Settled"); }
   function pendingPayments(){ return payments.filter(p => p.status === "Pending"); }
 
@@ -475,11 +488,9 @@
   function invoicePaidAmount(invoiceId){
     return round2(settledPaidAmount(invoiceId) + creditAppliedAmount(invoiceId) + planPaidAmount(invoiceId));
   }
-
   function invoiceOpenAmount(inv){
     return Math.max(0, round2(inv.amount - invoicePaidAmount(inv.id)));
   }
-
   function computeOpenTotal(){
     return round2(invoices.reduce((sum, inv) => sum + invoiceOpenAmount(inv), 0));
   }
@@ -493,38 +504,24 @@
   function invoiceHasAnySettledAllocation(invoiceId){
     return settledPaidAmount(invoiceId) > 0;
   }
-
   function planByInvoiceId(invoiceId){
     return paymentPlans.find(p => (p.invoiceIds || []).includes(invoiceId));
   }
 
-  // UPDATED rules per your notes:
-  // 1) If invoice is in payment plan -> status is "In behandeling" (NL) / "Pending" (EN), even if partially paid.
-  // 2) Top invoice: credit is applied, but no pending debit attempt -> still "Announced" (so credit doesn't force partial).
-  //    => Partial should only be shown if there is a settled payment OR plan paid installment (not just credit).
-  // 3) Pending means: we are trying to debit => there is a Pending payment linked to invoice.
+  // Status rules:
+  // - Paid: open == 0
+  // - In plan: "inplan" overrides partial
+  // - Pending: open==amount and has pending attempt
+  // - Rejected: open==amount and has rejected attempt
+  // - Partial: only if there is settled payment and 0<open<amount (credit alone doesn't trigger partial)
+  // - Otherwise: announced
   function invoiceStatus(inv){
     const open = invoiceOpenAmount(inv);
-    const inPlan = !!planByInvoiceId(inv.id);
-
-    // Paid always wins
     if(open === 0) return {key:"paid", label:t().invoicePills.paid};
-
-    // Payment plan overrides "partial"
-    if(inPlan) return {key:"processing", label:t().invoicePills.inplan};
-
-    // Pending attempt
+    if(planByInvoiceId(inv.id)) return {key:"processing", label:t().invoicePills.inplan};
     if(invoiceHasPendingAttempt(inv.id)) return {key:"processing", label:t().invoicePills.pending};
-
-    // Rejected attempt (optional)
     if(invoiceHasRejectedAttempt(inv.id)) return {key:"rejected", label:t().invoicePills.rejected};
-
-    // Deels betaald only if there is an ACTUAL received payment (settled) or paid plan installment (but plan is handled above)
-    if(invoiceHasAnySettledAllocation(inv.id) && open > 0 && open < inv.amount) {
-      return {key:"partial", label:t().invoicePills.partial};
-    }
-
-    // Otherwise announced (even if there is only a credit applied)
+    if(invoiceHasAnySettledAllocation(inv.id) && open > 0 && open < inv.amount) return {key:"partial", label:t().invoicePills.partial};
     return {key:"announced", label:t().invoicePills.announced};
   }
 
@@ -594,11 +591,11 @@
         <table>
           <thead>
             <tr>
-              <th style="width:200px;">${t().headers.tx}</th>
-              <th style="width:120px;">${t().headers.payDate}</th>
-              <th style="width:240px;">${t().headers.method}</th>
-              <th class="right" style="width:120px;">${t().headers.amount}</th>
-              <th>${t().headers.status}</th>
+              <th style="width:200px;">Tx</th>
+              <th style="width:120px;">${t().headers.payDate ?? "Date"}</th>
+              <th style="width:240px;">${t().headers.method ?? "Method"}</th>
+              <th class="right" style="width:120px;">${t().headers.amount ?? "Amount"}</th>
+              <th>${t().headers.status ?? "Status"}</th>
             </tr>
           </thead>
           <tbody>
@@ -617,34 +614,7 @@
     `;
   }
 
-  // Validation banner (check mismatches)
-  function validateData(){
-    const issues = [];
-    for(const inv of invoices){
-      const settled = settledPaidAmount(inv.id);
-      const credited = creditAppliedAmount(inv.id);
-      const expectedDebit = round2(inv.amount - credited); // if credit pre-applied, expected debit is lower
-      // If there is a settled DD allocation for this invoice, it should not exceed expectedDebit (demo rule)
-      const ddSettled = payments
-        .filter(p => p.status==="Settled" && (p.method||"").toLowerCase().includes("debit"))
-        .flatMap(p => (p.allocations||[]).filter(a => a.invoiceId===inv.id).map(a => a.amount))
-        .reduce((s,x)=>s+x,0);
-      if(ddSettled > expectedDebit + 0.001){
-        issues.push(t().warnLine(inv.id, money(inv.amount), money(settled), money(credited), money(expectedDebit)));
-      }
-    }
-    const warn = document.getElementById("warn");
-    if(issues.length){
-      warn.style.display = "block";
-      warn.innerHTML = `<b>${t().warnTitle}</b><br>${issues.map(x=>`• ${x}`).join("<br>")}`;
-    } else {
-      warn.style.display = "none";
-      warn.innerHTML = "";
-    }
-  }
-
-  let currentTab = "invoices";
-
+  // Renderers
   function sortInvoicesNewestFirst(list){ return [...list].sort((a,b) => b.docDate.localeCompare(a.docDate)); }
 
   function renderInvoices(list){
@@ -657,7 +627,7 @@
         <tr id="inv-${inv.id}">
           <td>
             <div class="invCell">
-              <span class="invName">${invoiceName(inv)}</span>
+              <span class="invName">Factuur</span>
               <a class="mono invId pdfLink" href="${pdfUrl}" target="_blank" rel="noopener" title="${t().openPdf}">
                 ${pdfIconSvg}<span>${inv.id}</span>
               </a>
@@ -680,7 +650,6 @@
       `;
     }).join("");
     document.getElementById("openTotal").textContent = money(computeOpenTotal());
-    validateData();
   }
 
   function renderPayments(filterText){
@@ -695,9 +664,7 @@
       const alloc = (p.allocations || []);
       const allocHtml = alloc.length
         ? `<ul style="margin:0; padding-left:18px;">
-            ${alloc.map(a => `
-              <li>${t().headers.invoice} <a class="mono" href="#inv-${a.invoiceId}">${a.invoiceId}</a> — <span class="mono">${money(a.amount)}</span></li>
-            `).join("")}
+            ${alloc.map(a => `<li>Factuur <a class="mono" href="#inv-${a.invoiceId}">${a.invoiceId}</a> — <span class="mono">${money(a.amount)}</span></li>`).join("")}
           </ul>`
         : `<span class="muted">—</span>`;
       return `
@@ -712,7 +679,6 @@
       `;
     }).join("");
     document.getElementById("openTotal").textContent = money(computeOpenTotal());
-    validateData();
   }
 
   function scheduleTable(plan){
@@ -722,11 +688,11 @@
           <thead>
             <tr>
               <th style="width:90px;">#</th>
-              <th style="width:120px;">${t().headers.dueDate}</th>
-              <th style="width:160px;">${t().headers.method}</th>
+              <th style="width:120px;">Vervaldatum</th>
+              <th style="width:160px;">Methode</th>
               <th style="width:160px;">Ref</th>
-              <th class="right" style="width:120px;">${t().headers.amount}</th>
-              <th style="width:220px;">${t().headers.status}</th>
+              <th class="right" style="width:120px;">Bedrag</th>
+              <th style="width:220px;">Status</th>
             </tr>
           </thead>
           <tbody>
@@ -763,7 +729,7 @@
           <td class="right mono amount">${money(plan.total)}</td>
           <td>
             <details open>
-              <summary>${lang==="nl" ? "Termijnen" : "Installments"}</summary>
+              <summary>Termijnen</summary>
               ${scheduleTable(plan)}
             </details>
           </td>
@@ -771,7 +737,6 @@
       `;
     }).join("");
     document.getElementById("openTotal").textContent = money(computeOpenTotal());
-    validateData();
   }
 
   function renderCredits(filterText){
@@ -784,9 +749,7 @@
     );
     document.getElementById("creditRows").innerHTML = filtered.map(c => {
       const linkHtml = `<ul style="margin:0; padding-left:18px;">
-        ${(c.allocations||[]).map(a => `
-          <li>${t().headers.invoice} <a class="mono" href="#inv-${a.invoiceId}">${a.invoiceId}</a> — <span class="mono">${money(a.amount)}</span></li>
-        `).join("")}
+        ${(c.allocations||[]).map(a => `<li>Factuur <a class="mono" href="#inv-${a.invoiceId}">${a.invoiceId}</a> — <span class="mono">${money(a.amount)}</span></li>`).join("")}
       </ul>`;
       return `
         <tr id="cr-${c.id}">
@@ -794,15 +757,16 @@
           <td>${fmtDate(c.createdDate)}</td>
           <td>${c.type}</td>
           <td class="right mono amount">${money(c.amount)}</td>
-          <td>${c.status==="Verrekend" ? pill(lang==="nl" ? "Verrekend" : "Applied", "success") : pill(c.status, "neutral")}</td>
+          <td>${pill(c.status==="Verrekend" ? (lang==="nl" ? "Verrekend":"Applied") : c.status, c.status==="Verrekend" ? "success" : "neutral")}</td>
           <td>${linkHtml}</td>
         </tr>
       `;
     }).join("");
     document.getElementById("openTotal").textContent = money(computeOpenTotal());
-    validateData();
   }
 
+  // Tabs
+  let currentTab = "invoices";
   function setActiveTab(tab){
     currentTab = tab;
     const ids = ["invoices","payments","plans","credits"];
@@ -819,9 +783,7 @@
 
   function applyFilterInvoices(filterText){
     const q = (filterText ?? "").trim().toLowerCase();
-    renderInvoices(invoices.filter(inv =>
-      inv.id.toLowerCase().includes(q) || invoiceName(inv).toLowerCase().includes(q)
-    ));
+    renderInvoices(invoices.filter(inv => inv.id.toLowerCase().includes(q)));
   }
 
   function openPlansTab(planId){
@@ -835,6 +797,40 @@
   }
   window.openPlansTab = openPlansTab;
 
+  // Customer lookup wiring
+  function refreshCustomerHeader(){
+    document.getElementById("activeCustomer").textContent = activeCustomerNo;
+    document.getElementById("activeProduct").textContent = activeProduct;
+  }
+
+  function renderAll(){
+    refreshCustomerHeader();
+    document.getElementById("openTotal").textContent = money(computeOpenTotal());
+    setActiveTab(currentTab);
+  }
+
+  document.getElementById("btnLookup").addEventListener("click", () => {
+    const input = (document.getElementById("customerNo").value || "").trim();
+    const err = document.getElementById("customerError");
+    err.textContent = "";
+    if(!input){
+      err.textContent = lang==="nl" ? "Vul een klantnummer in." : "Enter a customer number.";
+      return;
+    }
+    if(!loadCustomer(input)){
+      err.textContent = lang==="nl" ? "Klant niet gevonden." : "Customer not found.";
+      return;
+    }
+    // clear search
+    document.getElementById("q").value = "";
+    renderAll();
+  });
+
+  document.getElementById("customerNo").addEventListener("keydown", (e) => {
+    if(e.key === "Enter") document.getElementById("btnLookup").click();
+  });
+
+  // Search
   document.getElementById("q").addEventListener("input", (e) => {
     const q = e.target.value;
     if(currentTab === "invoices") applyFilterInvoices(q);
@@ -843,66 +839,32 @@
     else renderCredits(q);
   });
 
+  // Tab clicks
   document.getElementById("tab-invoices").addEventListener("click", () => setActiveTab("invoices"));
   document.getElementById("tab-payments").addEventListener("click", () => setActiveTab("payments"));
   document.getElementById("tab-plans").addEventListener("click", () => setActiveTab("plans"));
   document.getElementById("tab-credits").addEventListener("click", () => setActiveTab("credits"));
 
+  // Language buttons (lightweight: rerender + placeholders)
   function setLang(next){
     lang = next;
     localStorage.setItem("easy-ledger-lang", lang);
     document.getElementById("lang-nl").classList.toggle("active", lang==="nl");
     document.getElementById("lang-en").classList.toggle("active", lang==="en");
-
-    document.getElementById("tab-invoices").textContent = t().tabs.invoices;
-    document.getElementById("tab-payments").textContent = t().tabs.payments;
-    document.getElementById("tab-plans").textContent = t().tabs.plans;
-    document.getElementById("tab-credits").textContent = t().tabs.credits;
-
-    document.getElementById("subLeft").textContent = t().subLeft;
-    document.getElementById("lblOpenTotal").textContent = t().openTotal;
     document.getElementById("q").placeholder = t().searchPlaceholder;
-    document.getElementById("lblDarkMode").textContent = t().darkMode;
-
-    const h = t().headers;
-    document.getElementById("thInvoice").textContent = h.invoice;
-    document.getElementById("thInvoiceDate").textContent = h.invoiceDate;
-    document.getElementById("thDueDate").textContent = h.dueDate;
-    document.getElementById("thAmount").textContent = h.amount;
-    document.getElementById("thOpen").textContent = h.open;
-    document.getElementById("thStatus").textContent = h.status;
-    document.getElementById("thDunning").textContent = h.dunning;
-    document.getElementById("thTx").textContent = h.tx;
-
-    document.getElementById("thPayment").textContent = h.payment;
-    document.getElementById("thPayDate").textContent = h.payDate;
-    document.getElementById("thMethod").textContent = h.method;
-    document.getElementById("thPayStatus").textContent = h.payStatus;
-    document.getElementById("thPayAmount").textContent = h.payAmount;
-    document.getElementById("thLinked").textContent = h.linked;
-
-    document.getElementById("thPlan").textContent = h.plan;
-    document.getElementById("thPlanInvoices").textContent = h.planInvoices;
-    document.getElementById("thPlanStatus").textContent = h.planStatus;
-    document.getElementById("thPlanTotal").textContent = h.planTotal;
-    document.getElementById("thSchedule").textContent = h.schedule;
-
-    document.getElementById("thCredit").textContent = h.credit;
-    document.getElementById("thCreditDate").textContent = h.creditDate;
-    document.getElementById("thCreditType").textContent = h.creditType;
-    document.getElementById("thCreditAmount").textContent = h.creditAmount;
-    document.getElementById("thCreditStatus").textContent = h.creditStatus;
-    document.getElementById("thCreditLinked").textContent = h.creditLinked;
-
-    setActiveTab(currentTab);
+    document.getElementById("customerNo").placeholder = t().customerPlaceholder;
+    document.getElementById("btnLookup").textContent = t().lookup;
+    document.getElementById("lblOpenTotal").textContent = t().openTotal;
+    document.getElementById("customerInfo").innerHTML = `${t().customer}: <b class="mono" id="activeCustomer">${activeCustomerNo}</b> · ${t().product}: <b id="activeProduct">${activeProduct}</b>`;
+    renderAll();
   }
-
   document.getElementById("lang-nl").addEventListener("click", () => setLang("nl"));
   document.getElementById("lang-en").addEventListener("click", () => setLang("en"));
 
-  // init
+  // Init load customer 12345678
+  loadCustomer("12345678");
   setLang(lang);
-  applyTheme(localStorage.getItem(THEME_KEY) || "light");
+  renderAll();
 </script>
 </body>
 </html>
