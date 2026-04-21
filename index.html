@@ -165,11 +165,11 @@
     <div class="card">
       <header>
         <div>
-          <h1 id="appTitle">Easy Ledger</h1>
-          <div class="muted" style="font-size:13px;" id="appSubtitle">Demo Easy Ledger</div>
+          <h1>Easy Ledger</h1>
+          <div class="muted" style="font-size:13px;">Demo</div>
         </div>
         <div class="toolbar">
-          <div class="tabs" role="tablist" aria-label="Overzicht tabs">
+          <div class="tabs" role="tablist" aria-label="Tabs">
             <button class="tabbtn active" id="tab-invoices" type="button">Facturen</button>
             <button class="tabbtn" id="tab-payments" type="button">Betalingen</button>
             <button class="tabbtn" id="tab-plans" type="button">Betalingsregelingen</button>
@@ -189,15 +189,14 @@
             </label>
           </div>
 
-          <input id="q" type="search" placeholder="Zoek op factuur, betaling, plan of credit…" />
+          <input id="q" type="search" placeholder="Zoek…" />
         </div>
       </header>
 
-      <!-- NEW: customer lookup -->
       <div class="customerBox">
         <input id="customerNo" type="text" inputmode="numeric" placeholder="Klantnummer (bijv. 12345678)" />
         <button class="btn" id="btnLookup" type="button">Zoek klant</button>
-        <span class="customerTag" id="customerInfo">Klant: <b class="mono" id="activeCustomer">12345678</b> · Product: <b id="activeProduct">Odido</b></span>
+        <span class="customerTag" id="customerInfo">Klant: <b class="mono" id="activeCustomer">12345678</b> · Product: <b id="activeProduct">TBD</b></span>
         <span class="error" id="customerError"></span>
       </div>
 
@@ -212,14 +211,14 @@
         <table>
           <thead>
             <tr>
-              <th style="width:360px;" id="thInvoice">Factuur</th>
-              <th style="width:120px;" id="thInvoiceDate">Factuurdatum</th>
-              <th style="width:120px;" id="thDueDate">Vervaldatum</th>
-              <th class="right" style="width:120px;" id="thAmount">Bedrag</th>
-              <th class="right" style="width:140px;" id="thOpen">Openstaand</th>
-              <th style="width:210px;" id="thStatus">Status</th>
-              <th style="width:240px;" id="thDunning">Dunning</th>
-              <th id="thTx">Transacties</th>
+              <th style="width:360px;">Factuur</th>
+              <th style="width:120px;">Factuurdatum</th>
+              <th style="width:120px;">Vervaldatum</th>
+              <th class="right" style="width:120px;">Bedrag</th>
+              <th class="right" style="width:140px;">Openstaand</th>
+              <th style="width:210px;">Status</th>
+              <th style="width:240px;">Dunning</th>
+              <th>Transacties</th>
             </tr>
           </thead>
           <tbody id="rows"></tbody>
@@ -230,12 +229,12 @@
         <table>
           <thead>
             <tr>
-              <th style="width:180px;" id="thPayment">Betaling</th>
-              <th style="width:120px;" id="thPayDate">Datum</th>
-              <th style="width:200px;" id="thMethod">Methode</th>
-              <th style="width:200px;" id="thPayStatus">Status</th>
-              <th class="right" style="width:140px;" id="thPayAmount">Bedrag</th>
-              <th id="thLinked">Gekoppeld aan facturen</th>
+              <th style="width:180px;">Betaling</th>
+              <th style="width:120px;">Datum</th>
+              <th style="width:200px;">Methode</th>
+              <th style="width:200px;">Status</th>
+              <th class="right" style="width:140px;">Bedrag</th>
+              <th>Gekoppeld aan facturen</th>
             </tr>
           </thead>
           <tbody id="paymentRows"></tbody>
@@ -246,11 +245,11 @@
         <table>
           <thead>
             <tr>
-              <th style="width:200px;" id="thPlan">Plan</th>
-              <th style="width:200px;" id="thPlanInvoices">Facturen</th>
-              <th style="width:160px;" id="thPlanStatus">Status</th>
-              <th class="right" style="width:140px;" id="thPlanTotal">Totaal</th>
-              <th id="thSchedule">Termijnen & afschrijvingen</th>
+              <th style="width:200px;">Plan</th>
+              <th style="width:200px;">Facturen</th>
+              <th style="width:160px;">Status</th>
+              <th class="right" style="width:140px;">Totaal</th>
+              <th>Termijnen & afschrijvingen</th>
             </tr>
           </thead>
           <tbody id="planRows"></tbody>
@@ -261,57 +260,35 @@
         <table>
           <thead>
             <tr>
-              <th style="width:180px;" id="thCredit">Credit</th>
-              <th style="width:140px;" id="thCreditDate">Datum toegevoegd</th>
-              <th style="width:160px;" id="thCreditType">Type</th>
-              <th class="right" style="width:140px;" id="thCreditAmount">Bedrag</th>
-              <th style="width:260px;" id="thCreditStatus">Status</th>
-              <th id="thCreditLinked">Verrekend met / gepland op</th>
+              <th style="width:180px;">Credit</th>
+              <th style="width:140px;">Datum toegevoegd</th>
+              <th style="width:160px;">Type</th>
+              <th class="right" style="width:140px;">Bedrag</th>
+              <th style="width:260px;">Status</th>
+              <th>Verrekend met / gepland op</th>
             </tr>
           </thead>
           <tbody id="creditRows"></tbody>
         </table>
       </div>
+
     </div>
   </div>
 
 <script>
-  // Language (kept short; labels only where needed for this change)
+  // Minimal i18n (kept simple)
   const I18N = {
-    nl: {
-      searchPlaceholder: "Zoek op factuur, betaling, plan of credit…",
-      customerPlaceholder: "Klantnummer (bijv. 12345678)",
-      lookup: "Zoek klant",
-      customer: "Klant",
-      product: "Product",
-      openPdf: "Open PDF",
-      paymentPlanBadge: "Betalingsregeling",
-      invoicePills: { paid:"Betaald", partial:"Deels betaald", announced:"Aangekondigd", pending:"In afschrijving", rejected:"Afgewezen", inplan:"In behandeling" },
-      paymentPills: { Settled:"Verwerkt", Pending:"In verwerking", Rejected:"Afgewezen" },
-      dunningLabel:"Dunning", dunningOn:"Aan", dunningOff:"Uit", levelLabel:"Level",
-      txNone:"Geen transacties.", txSummary:"Transacties",
-      openTotal:"Totaal openstaand",
-      resultMatched:"Matched",
-      creditApplied:"Credit verrekend"
-    },
-    en: {
-      searchPlaceholder: "Search invoice, payment, plan or credit…",
-      customerPlaceholder: "Customer number (e.g. 12345678)",
-      lookup: "Find customer",
-      customer: "Customer",
-      product: "Product",
-      openPdf: "Open PDF",
-      paymentPlanBadge: "Payment plan",
-      invoicePills: { paid:"Paid", partial:"Partially paid", announced:"Announced", pending:"Pending", rejected:"Rejected", inplan:"Pending" },
-      paymentPills: { Settled:"Processed", Pending:"Processing", Rejected:"Rejected" },
-      dunningLabel:"Dunning", dunningOn:"On", dunningOff:"Off", levelLabel:"Level",
-      txNone:"No transactions.", txSummary:"Transactions",
-      openTotal:"Total outstanding",
-      resultMatched:"Matched",
-      creditApplied:"Credit applied"
-    }
+    nl: { search:"Zoek…", custPh:"Klantnummer (bijv. 12345678)", lookup:"Zoek klant", cust:"Klant", product:"Product",
+          openTotal:"Totaal openstaand", openPdf:"Open PDF", planBadge:"Betalingsregeling",
+          pills:{paid:"Betaald", partial:"Deels betaald", announced:"Aangekondigd", pending:"In afschrijving", inplan:"In behandeling", rejected:"Afgewezen"},
+          payPills:{Settled:"Verwerkt", Pending:"In verwerking", Rejected:"Afgewezen"},
+          dunning:"Dunning", on:"Aan", off:"Uit", level:"Level", tx:"Transacties", noTx:"Geen transacties.", creditApplied:"Credit verrekend" },
+    en: { search:"Search…", custPh:"Customer number (e.g. 12345678)", lookup:"Find customer", cust:"Customer", product:"Product",
+          openTotal:"Total outstanding", openPdf:"Open PDF", planBadge:"Payment plan",
+          pills:{paid:"Paid", partial:"Partially paid", announced:"Announced", pending:"Pending", inplan:"Pending", rejected:"Rejected"},
+          payPills:{Settled:"Processed", Pending:"Processing", Rejected:"Rejected"},
+          dunning:"Dunning", on:"On", off:"Off", level:"Level", tx:"Transactions", noTx:"No transactions.", creditApplied:"Credit applied" }
   };
-
   let lang = localStorage.getItem("easy-ledger-lang") || "nl";
   const t = () => I18N[lang];
 
@@ -348,7 +325,7 @@
     </svg>
   `;
 
-  // ===== Base dataset (the current scenario) =====
+  // Base ledger (no brand names)
   const baseLedger = {
     invoices: [
       {id:fixInvoiceId("901617100120"), docDate:"2026-02-27", dueDate:"2026-03-20", amount:115.69, phase:"announced"},
@@ -363,59 +340,50 @@
       {
         id:"PLAN-SEP-2025-09",
         invoiceIds:[ fixInvoiceId("901617100125"), fixInvoiceId("901617100126") ],
-        status:"Actief",
+        status:"Active",
         total:141.10 + 135.25,
         schedule:[
-          { term:1, dueDate:"2025-10-05", method:"Incasso", doc:"DD-PLAN-01", status:"Paid",
+          { term:1, dueDate:"2025-10-05", method:"Direct debit", doc:"DD-PLAN-01", status:"Paid",
             allocations:[
               {invoiceId:fixInvoiceId("901617100125"), amount:47.03},
               {invoiceId:fixInvoiceId("901617100126"), amount:45.09}
             ]
           },
-          { term:2, dueDate:"2025-11-05", method:"Incasso", doc:"DD-PLAN-02", status:"Scheduled", allocations:[] },
-          { term:3, dueDate:"2025-12-05", method:"Incasso", doc:"DD-PLAN-03", status:"Scheduled", allocations:[] }
+          { term:2, dueDate:"2025-11-05", method:"Direct debit", doc:"DD-PLAN-02", status:"Scheduled", allocations:[] },
+          { term:3, dueDate:"2025-12-05", method:"Direct debit", doc:"DD-PLAN-03", status:"Scheduled", allocations:[] }
         ]
       }
     ],
     credits: [
-      { id:"CR-20260105-001", createdDate:"2026-01-05", type:"Credit", amount:15.00, status:"Verrekend",
+      { id:"CR-20260105-001", createdDate:"2026-01-05", type:"Credit", amount:15.00, status:"Applied",
         allocations:[{invoiceId: fixInvoiceId("901617100122"), amount:15.00}] },
-      { id:"CR-20260210-002", createdDate:"2026-02-10", type:"Credit", amount:20.00, status:"Verrekend",
+      { id:"CR-20260210-002", createdDate:"2026-02-10", type:"Credit", amount:20.00, status:"Applied",
         allocations:[{invoiceId: fixInvoiceId("901617100120"), amount:20.00}] }
     ],
     payments: [
       { id:"PAY-20260228-BULK", date:"2026-02-28", method:"Bank transfer", status:"Settled", amount:200.00,
         allocations:[{invoiceId: fixInvoiceId("901617100123"), amount:80.00},{invoiceId: fixInvoiceId("901617100124"), amount:120.00}] },
-      { id:"PAY-20260219-0001", date:"2026-02-19", method:"Direct debit (SEPA DD)", status:"Pending", amount:146.53,
+      { id:"PAY-20260219-0001", date:"2026-02-19", method:"Direct debit", status:"Pending", amount:146.53,
         allocations:[{invoiceId:fixInvoiceId("901617100121"), amount:146.53}] },
-      /* FIX from earlier: December debit after credit = 105.73 */
-      { id:"PAY-20260120-0009", date:"2026-01-20", method:"Direct debit (SEPA DD)", status:"Settled", amount:105.73,
+      { id:"PAY-20260120-0009", date:"2026-01-20", method:"Direct debit", status:"Settled", amount:105.73,
         allocations:[{invoiceId:fixInvoiceId("901617100122"), amount:105.73}] },
       { id:"PAY-20251210-SHOP", date:"2025-12-10", method:"Payment in shop", status:"Settled", amount:35.00,
         allocations:[{invoiceId:fixInvoiceId("901617100123"), amount:25.00},{invoiceId:fixInvoiceId("901617100124"), amount:10.00}] }
     ]
   };
 
-  // ===== Customer scenarios =====
-  // 12345678 -> current ledger with PDF links to local pdf/<invoiceId>.pdf
-  // 23456789 -> same ledger, but PDF link should open "Open BV"
   const customers = {
-    "12345678": { customerNo:"12345678", product:"Odido", pdfMode:"local", ledger: baseLedger },
+    "12345678": { customerNo:"12345678", product:"TBD", pdfMode:"local", ledger: baseLedger },
     "23456789": { customerNo:"23456789", product:"Open BV", pdfMode:"openbv", ledger: baseLedger },
   };
 
-  // Active context
+  // Active context + working data
   let activeCustomerNo = "12345678";
-  let activeProduct = customers[activeCustomerNo].product;
-  let activePdfMode = customers[activeCustomerNo].pdfMode;
+  let activeProduct = "TBD";
+  let activePdfMode = "local";
+  let invoices = [], paymentPlans = [], credits = [], payments = [];
 
-  // Working data (swapped on lookup)
-  let invoices = [];
-  let paymentPlans = [];
-  let credits = [];
-  let payments = [];
-
-  function clone(obj){ return JSON.parse(JSON.stringify(obj)); }
+  function clone(o){ return JSON.parse(JSON.stringify(o)); }
   function loadCustomer(customerNo){
     const c = customers[customerNo];
     if(!c) return false;
@@ -432,24 +400,29 @@
   }
 
   function invoicePdfUrl(invoiceId){
-    if(activePdfMode === "openbv"){
-      // Placeholder for Open BV route
-      return `https://openbv.example/invoice/${encodeURIComponent(invoiceId)}`;
-    }
+    if(activePdfMode === "openbv") return `https://openbv.example/invoice/${encodeURIComponent(invoiceId)}`;
     return `pdf/${invoiceId}.pdf`;
   }
 
-  // ===== Business logic =====
+  // Querystring
+  function getQueryParam(name){ return new URLSearchParams(window.location.search).get(name); }
+  function setQueryCustomer(customerNo){
+    const url = new URL(window.location.href);
+    url.searchParams.set("customer", customerNo);
+    history.replaceState({}, "", url.toString());
+  }
+
+  // Ledger calculations
   function settledPayments(){ return payments.filter(p => p.status === "Settled"); }
   function pendingPayments(){ return payments.filter(p => p.status === "Pending"); }
 
   function planPaidAllocations(){
     const allocs = [];
     for(const plan of paymentPlans){
-      for(const line of (plan.schedule || [])){
+      for(const line of (plan.schedule||[])){
         if(line.status !== "Paid") continue;
-        for(const a of (line.allocations || [])){
-          allocs.push({planId: plan.id, doc: line.doc, date: line.dueDate, method: line.method, invoiceId: a.invoiceId, amount: a.amount});
+        for(const a of (line.allocations||[])){
+          allocs.push({planId:plan.id, doc:line.doc, date:line.dueDate, method:line.method, invoiceId:a.invoiceId, amount:a.amount});
         }
       }
     }
@@ -459,8 +432,8 @@
   function creditAppliedAmount(invoiceId){
     let sum = 0;
     for(const c of credits){
-      if(c.status !== "Verrekend") continue;
-      for(const a of (c.allocations || [])){
+      if(c.status !== "Applied") continue;
+      for(const a of (c.allocations||[])){
         if(a.invoiceId === invoiceId) sum += a.amount;
       }
     }
@@ -470,7 +443,7 @@
   function settledPaidAmount(invoiceId){
     let sum = 0;
     for(const p of settledPayments()){
-      for(const a of (p.allocations || [])){
+      for(const a of (p.allocations||[])){
         if(a.invoiceId === invoiceId) sum += a.amount;
       }
     }
@@ -492,120 +465,93 @@
     return Math.max(0, round2(inv.amount - invoicePaidAmount(inv.id)));
   }
   function computeOpenTotal(){
-    return round2(invoices.reduce((sum, inv) => sum + invoiceOpenAmount(inv), 0));
+    return round2(invoices.reduce((s,inv)=>s+invoiceOpenAmount(inv),0));
   }
 
   function invoiceHasPendingAttempt(invoiceId){
-    return pendingPayments().some(p => (p.allocations || []).some(a => a.invoiceId === invoiceId));
+    return pendingPayments().some(p => (p.allocations||[]).some(a => a.invoiceId === invoiceId));
   }
   function invoiceHasRejectedAttempt(invoiceId){
-    return payments.some(p => p.status === "Rejected" && (p.allocations || []).some(a => a.invoiceId === invoiceId));
+    return payments.some(p => p.status==="Rejected" && (p.allocations||[]).some(a => a.invoiceId === invoiceId));
   }
   function invoiceHasAnySettledAllocation(invoiceId){
     return settledPaidAmount(invoiceId) > 0;
   }
   function planByInvoiceId(invoiceId){
-    return paymentPlans.find(p => (p.invoiceIds || []).includes(invoiceId));
+    return paymentPlans.find(p => (p.invoiceIds||[]).includes(invoiceId));
   }
 
-  // Status rules:
-  // - Paid: open == 0
-  // - In plan: "inplan" overrides partial
-  // - Pending: open==amount and has pending attempt
-  // - Rejected: open==amount and has rejected attempt
-  // - Partial: only if there is settled payment and 0<open<amount (credit alone doesn't trigger partial)
-  // - Otherwise: announced
   function invoiceStatus(inv){
     const open = invoiceOpenAmount(inv);
-    if(open === 0) return {key:"paid", label:t().invoicePills.paid};
-    if(planByInvoiceId(inv.id)) return {key:"processing", label:t().invoicePills.inplan};
-    if(invoiceHasPendingAttempt(inv.id)) return {key:"processing", label:t().invoicePills.pending};
-    if(invoiceHasRejectedAttempt(inv.id)) return {key:"rejected", label:t().invoicePills.rejected};
-    if(invoiceHasAnySettledAllocation(inv.id) && open > 0 && open < inv.amount) return {key:"partial", label:t().invoicePills.partial};
-    return {key:"announced", label:t().invoicePills.announced};
+    if(open === 0) return {key:"paid", label:t().pills.paid};
+    if(planByInvoiceId(inv.id)) return {key:"processing", label:t().pills.inplan};
+    if(invoiceHasPendingAttempt(inv.id)) return {key:"processing", label:t().pills.pending};
+    if(invoiceHasRejectedAttempt(inv.id)) return {key:"rejected", label:t().pills.rejected};
+    if(invoiceHasAnySettledAllocation(inv.id) && open > 0 && open < inv.amount) return {key:"partial", label:t().pills.partial};
+    return {key:"announced", label:t().pills.announced};
   }
 
-  function dunningInfo(inv){
-    const st = invoiceStatus(inv).key;
-    const hasPlan = !!planByInvoiceId(inv.id);
-    if(st === "rejected" && hasPlan) return {mode:"on", level:1};
-    return {mode:"off", level:0};
-  }
-
-  function statusPillFromInvoice(inv){
-    const st = invoiceStatus(inv);
-    return pill(st.label, st.key);
-  }
   function dunningCell(inv){
-    const d = dunningInfo(inv);
+    const st = invoiceStatus(inv).key;
+    const inPlan = !!planByInvoiceId(inv.id);
+    const on = (st==="rejected" && inPlan);
     return `
       <div class="dunning">
-        <span class="tag ${d.mode === "on" ? "dunning-on" : "dunning-off"}">${t().dunningLabel}: ${d.mode === "on" ? t().dunningOn : t().dunningOff}</span>
-        <span class="tag level">${t().levelLabel}: ${d.level}</span>
+        <span class="tag ${on ? "dunning-on" : "dunning-off"}">${t().dunning}: ${on ? t().on : t().off}</span>
+        <span class="tag level">${t().level}: ${on ? 1 : 0}</span>
       </div>
     `;
   }
+
   function paymentStatusPill(status){
-    const map = t().paymentPills;
-    switch(status){
-      case "Settled": return pill(map.Settled, "success");
-      case "Pending": return pill(map.Pending, "warning");
-      case "Rejected": return pill(map.Rejected, "danger");
-      default: return pill(status, "neutral");
-    }
-  }
-  function planLineStatusPill(status){
-    const m = t().planLinePills;
-    switch(status){
-      case "Paid": return pill(m.Paid, "success");
-      case "Scheduled": return pill(m.Scheduled, "neutral");
-      case "Pending": return pill(m.Pending, "warning");
-      case "Rejected": return pill(m.Rejected, "danger");
-      default: return pill(status, "neutral");
-    }
+    const map = t().payPills;
+    if(status==="Settled") return pill(map.Settled,"success");
+    if(status==="Pending") return pill(map.Pending,"warning");
+    if(status==="Rejected") return pill(map.Rejected,"danger");
+    return pill(status,"neutral");
   }
 
   function txTable(invoiceId){
     const txs = [];
     for(const p of payments){
-      for(const a of (p.allocations || [])){
+      for(const a of (p.allocations||[])){
         if(a.invoiceId !== invoiceId) continue;
-        txs.push({ doc:p.id, date:p.date, type:p.method, amount:-Math.abs(a.amount), result:p.status });
+        txs.push({doc:p.id,date:p.date,type:p.method,amount:-Math.abs(a.amount),result:p.status});
       }
     }
     for(const c of credits){
-      if(c.status !== "Verrekend") continue;
-      for(const a of (c.allocations || [])){
+      if(c.status!=="Applied") continue;
+      for(const a of (c.allocations||[])){
         if(a.invoiceId !== invoiceId) continue;
-        txs.push({ doc:c.id, date:c.createdDate, type:"Credit", amount:-Math.abs(a.amount), result:t().creditApplied });
+        txs.push({doc:c.id,date:c.createdDate,type:"Credit",amount:-Math.abs(a.amount),result:t().creditApplied});
       }
     }
     for(const a of planPaidAllocations()){
       if(a.invoiceId !== invoiceId) continue;
-      txs.push({ doc:a.doc, date:a.date, type:`${t().tabs.plans} (${a.planId})`, amount:-Math.abs(a.amount), result:t().planLinePills.Paid });
+      txs.push({doc:a.doc,date:a.date,type:`${t().planBadge} (${a.planId})`,amount:-Math.abs(a.amount),result:"Paid"});
     }
-    if(!txs.length) return `<div class="muted">${t().txNone}</div>`;
-    txs.sort((a,b) => b.date.localeCompare(a.date));
+    if(!txs.length) return `<div class="muted">${t().noTx}</div>`;
+    txs.sort((a,b)=>b.date.localeCompare(a.date));
     return `
       <div class="tx">
         <table>
           <thead>
             <tr>
               <th style="width:200px;">Tx</th>
-              <th style="width:120px;">${t().headers.payDate ?? "Date"}</th>
-              <th style="width:240px;">${t().headers.method ?? "Method"}</th>
-              <th class="right" style="width:120px;">${t().headers.amount ?? "Amount"}</th>
-              <th>${t().headers.status ?? "Status"}</th>
+              <th style="width:120px;">Date</th>
+              <th style="width:240px;">Type</th>
+              <th class="right" style="width:120px;">Amount</th>
+              <th>Status</th>
             </tr>
           </thead>
           <tbody>
-            ${txs.map(txx => `
+            ${txs.map(x=>`
               <tr>
-                <td class="mono"><a href="#pay-${txx.doc}">${txx.doc}</a></td>
-                <td>${fmtDate(txx.date)}</td>
-                <td>${txx.type}</td>
-                <td class="right mono amount">${money(txx.amount)}</td>
-                <td>${txx.result === "Settled" ? t().resultMatched : txx.result}</td>
+                <td class="mono"><a href="#pay-${x.doc}">${x.doc}</a></td>
+                <td>${fmtDate(x.date)}</td>
+                <td>${x.type}</td>
+                <td class="right mono amount">${money(x.amount)}</td>
+                <td>${x.result==="Settled" ? t().resultMatched : x.result}</td>
               </tr>
             `).join("")}
           </tbody>
@@ -614,35 +560,38 @@
     `;
   }
 
-  // Renderers
-  function sortInvoicesNewestFirst(list){ return [...list].sort((a,b) => b.docDate.localeCompare(a.docDate)); }
+  // Rendering
+  let currentTab = "invoices";
+  function sortInvoicesNewestFirst(list){ return [...list].sort((a,b)=>b.docDate.localeCompare(a.docDate)); }
 
-  function renderInvoices(list){
-    const sorted = sortInvoicesNewestFirst(list);
-    document.getElementById("rows").innerHTML = sorted.map(inv => {
-      const plan = planByInvoiceId(inv.id);
+  function renderInvoices(filterText=""){
+    const q = filterText.trim().toLowerCase();
+    const list = sortInvoicesNewestFirst(invoices).filter(inv => inv.id.toLowerCase().includes(q));
+    document.getElementById("rows").innerHTML = list.map(inv=>{
       const open = invoiceOpenAmount(inv);
+      const plan = planByInvoiceId(inv.id);
       const pdfUrl = invoicePdfUrl(inv.id);
+      const st = invoiceStatus(inv);
       return `
         <tr id="inv-${inv.id}">
           <td>
             <div class="invCell">
-              <span class="invName">Factuur</span>
+              <span class="invName">${lang==="nl" ? "Factuur" : "Invoice"}</span>
               <a class="mono invId pdfLink" href="${pdfUrl}" target="_blank" rel="noopener" title="${t().openPdf}">
                 ${pdfIconSvg}<span>${inv.id}</span>
               </a>
-              ${plan ? `<span class="badge" onclick="openPlansTab('${plan.id}')" title="${t().paymentPlanBadge}">${t().paymentPlanBadge}</span>` : ``}
+              ${plan ? `<span class="badge" onclick="openPlansTab('${plan.id}')" title="${t().planBadge}">${t().planBadge}</span>` : ``}
             </div>
           </td>
           <td>${fmtDate(inv.docDate)}</td>
           <td>${fmtDate(inv.dueDate)}</td>
           <td class="right mono amount">${money(inv.amount)}</td>
           <td class="right mono amount">${money(open)}</td>
-          <td>${statusPillFromInvoice(inv)}</td>
+          <td>${pill(st.label, st.key)}</td>
           <td>${dunningCell(inv)}</td>
           <td>
             <details>
-              <summary>${t().txSummary}</summary>
+              <summary>${t().tx}</summary>
               ${txTable(inv.id)}
             </details>
           </td>
@@ -652,19 +601,19 @@
     document.getElementById("openTotal").textContent = money(computeOpenTotal());
   }
 
-  function renderPayments(filterText){
-    const q = (filterText ?? "").trim().toLowerCase();
+  function renderPayments(filterText=""){
+    const q = filterText.trim().toLowerCase();
     const filtered = payments.filter(p =>
       p.id.toLowerCase().includes(q) ||
       p.method.toLowerCase().includes(q) ||
       p.status.toLowerCase().includes(q) ||
-      (p.allocations || []).some(a => a.invoiceId.toLowerCase().includes(q))
+      (p.allocations||[]).some(a => a.invoiceId.toLowerCase().includes(q))
     );
-    document.getElementById("paymentRows").innerHTML = filtered.map(p => {
-      const alloc = (p.allocations || []);
+    document.getElementById("paymentRows").innerHTML = filtered.map(p=>{
+      const alloc = p.allocations||[];
       const allocHtml = alloc.length
         ? `<ul style="margin:0; padding-left:18px;">
-            ${alloc.map(a => `<li>Factuur <a class="mono" href="#inv-${a.invoiceId}">${a.invoiceId}</a> — <span class="mono">${money(a.amount)}</span></li>`).join("")}
+            ${alloc.map(a=>`<li>Invoice <a class="mono" href="#inv-${a.invoiceId}">${a.invoiceId}</a> — <span class="mono">${money(a.amount)}</span></li>`).join("")}
           </ul>`
         : `<span class="muted">—</span>`;
       return `
@@ -688,22 +637,22 @@
           <thead>
             <tr>
               <th style="width:90px;">#</th>
-              <th style="width:120px;">Vervaldatum</th>
-              <th style="width:160px;">Methode</th>
+              <th style="width:120px;">Due</th>
+              <th style="width:160px;">Method</th>
               <th style="width:160px;">Ref</th>
-              <th class="right" style="width:120px;">Bedrag</th>
+              <th class="right" style="width:120px;">Amount</th>
               <th style="width:220px;">Status</th>
             </tr>
           </thead>
           <tbody>
-            ${plan.schedule.map(s => `
+            ${(plan.schedule||[]).map(s=>`
               <tr>
                 <td class="mono">${s.term}</td>
                 <td>${fmtDate(s.dueDate)}</td>
                 <td>${s.method}</td>
                 <td class="mono">${s.doc}</td>
                 <td class="right mono amount">${money(-Math.abs((s.allocations||[]).reduce((x,a)=>x+a.amount,0)))}</td>
-                <td>${planLineStatusPill(s.status)}</td>
+                <td>${pill(s.status, "neutral")}</td>
               </tr>
             `).join("")}
           </tbody>
@@ -712,15 +661,14 @@
     `;
   }
 
-  function renderPlans(filterText){
-    const q = (filterText ?? "").trim().toLowerCase();
+  function renderPlans(filterText=""){
+    const q = filterText.trim().toLowerCase();
     const filtered = paymentPlans.filter(p =>
       p.id.toLowerCase().includes(q) ||
-      (p.invoiceIds || []).some(id => id.toLowerCase().includes(q)) ||
-      (p.status || "").toLowerCase().includes(q)
+      (p.invoiceIds||[]).some(id => id.toLowerCase().includes(q))
     );
-    document.getElementById("planRows").innerHTML = filtered.map(plan => {
-      const invLinks = (plan.invoiceIds || []).map(id => `<a class="mono" href="#inv-${id}">${id}</a>`).join(", ");
+    document.getElementById("planRows").innerHTML = filtered.map(plan=>{
+      const invLinks = (plan.invoiceIds||[]).map(id => `<a class="mono" href="#inv-${id}">${id}</a>`).join(", ");
       return `
         <tr id="plan-${plan.id}">
           <td class="mono"><a href="#plan-${plan.id}">${plan.id}</a></td>
@@ -729,7 +677,7 @@
           <td class="right mono amount">${money(plan.total)}</td>
           <td>
             <details open>
-              <summary>Termijnen</summary>
+              <summary>${lang==="nl" ? "Termijnen" : "Installments"}</summary>
               ${scheduleTable(plan)}
             </details>
           </td>
@@ -739,17 +687,15 @@
     document.getElementById("openTotal").textContent = money(computeOpenTotal());
   }
 
-  function renderCredits(filterText){
-    const q = (filterText ?? "").trim().toLowerCase();
+  function renderCredits(filterText=""){
+    const q = filterText.trim().toLowerCase();
     const filtered = credits.filter(c =>
       c.id.toLowerCase().includes(q) ||
-      (c.type||"").toLowerCase().includes(q) ||
-      (c.status||"").toLowerCase().includes(q) ||
-      (c.allocations||[]).some(a => (a.invoiceId||"").toLowerCase().includes(q))
+      (c.allocations||[]).some(a => a.invoiceId.toLowerCase().includes(q))
     );
-    document.getElementById("creditRows").innerHTML = filtered.map(c => {
+    document.getElementById("creditRows").innerHTML = filtered.map(c=>{
       const linkHtml = `<ul style="margin:0; padding-left:18px;">
-        ${(c.allocations||[]).map(a => `<li>Factuur <a class="mono" href="#inv-${a.invoiceId}">${a.invoiceId}</a> — <span class="mono">${money(a.amount)}</span></li>`).join("")}
+        ${(c.allocations||[]).map(a=>`<li>Invoice <a class="mono" href="#inv-${a.invoiceId}">${a.invoiceId}</a> — <span class="mono">${money(a.amount)}</span></li>`).join("")}
       </ul>`;
       return `
         <tr id="cr-${c.id}">
@@ -757,7 +703,7 @@
           <td>${fmtDate(c.createdDate)}</td>
           <td>${c.type}</td>
           <td class="right mono amount">${money(c.amount)}</td>
-          <td>${pill(c.status==="Verrekend" ? (lang==="nl" ? "Verrekend":"Applied") : c.status, c.status==="Verrekend" ? "success" : "neutral")}</td>
+          <td>${pill(c.status, "success")}</td>
           <td>${linkHtml}</td>
         </tr>
       `;
@@ -765,8 +711,6 @@
     document.getElementById("openTotal").textContent = money(computeOpenTotal());
   }
 
-  // Tabs
-  let currentTab = "invoices";
   function setActiveTab(tab){
     currentTab = tab;
     const ids = ["invoices","payments","plans","credits"];
@@ -775,29 +719,21 @@
       document.getElementById(`tab-${k}`).classList.toggle("active", k === tab);
     }
     const q = document.getElementById("q").value;
-    if(tab === "invoices") applyFilterInvoices(q);
-    else if(tab === "payments") renderPayments(q);
-    else if(tab === "plans") renderPlans(q);
-    else renderCredits(q);
-  }
-
-  function applyFilterInvoices(filterText){
-    const q = (filterText ?? "").trim().toLowerCase();
-    renderInvoices(invoices.filter(inv => inv.id.toLowerCase().includes(q)));
+    if(tab==="invoices") renderInvoices(q);
+    if(tab==="payments") renderPayments(q);
+    if(tab==="plans") renderPlans(q);
+    if(tab==="credits") renderCredits(q);
   }
 
   function openPlansTab(planId){
     setActiveTab("plans");
-    if(planId){
-      setTimeout(() => {
-        const el = document.getElementById(`plan-${planId}`);
-        if(el) el.scrollIntoView({behavior:"smooth", block:"center"});
-      }, 0);
-    }
+    setTimeout(() => {
+      const el = document.getElementById(`plan-${planId}`);
+      if(el) el.scrollIntoView({behavior:"smooth", block:"center"});
+    }, 0);
   }
   window.openPlansTab = openPlansTab;
 
-  // Customer lookup wiring
   function refreshCustomerHeader(){
     document.getElementById("activeCustomer").textContent = activeCustomerNo;
     document.getElementById("activeProduct").textContent = activeProduct;
@@ -809,6 +745,21 @@
     setActiveTab(currentTab);
   }
 
+  function lookupCustomer(customerNo, updateUrl=true){
+    const err = document.getElementById("customerError");
+    err.textContent = "";
+    if(!loadCustomer(customerNo)){
+      err.textContent = lang==="nl" ? "Klant niet gevonden." : "Customer not found.";
+      return false;
+    }
+    document.getElementById("customerNo").value = customerNo;
+    document.getElementById("q").value = "";
+    if(updateUrl) setQueryCustomer(customerNo);
+    renderAll();
+    return true;
+  }
+
+  // Events
   document.getElementById("btnLookup").addEventListener("click", () => {
     const input = (document.getElementById("customerNo").value || "").trim();
     const err = document.getElementById("customerError");
@@ -817,54 +768,47 @@
       err.textContent = lang==="nl" ? "Vul een klantnummer in." : "Enter a customer number.";
       return;
     }
-    if(!loadCustomer(input)){
-      err.textContent = lang==="nl" ? "Klant niet gevonden." : "Customer not found.";
-      return;
-    }
-    // clear search
-    document.getElementById("q").value = "";
-    renderAll();
+    lookupCustomer(input, true);
   });
-
   document.getElementById("customerNo").addEventListener("keydown", (e) => {
     if(e.key === "Enter") document.getElementById("btnLookup").click();
   });
 
-  // Search
-  document.getElementById("q").addEventListener("input", (e) => {
-    const q = e.target.value;
-    if(currentTab === "invoices") applyFilterInvoices(q);
-    else if(currentTab === "payments") renderPayments(q);
-    else if(currentTab === "plans") renderPlans(q);
-    else renderCredits(q);
-  });
+  document.getElementById("q").addEventListener("input", (e) => setActiveTab(currentTab));
 
-  // Tab clicks
   document.getElementById("tab-invoices").addEventListener("click", () => setActiveTab("invoices"));
   document.getElementById("tab-payments").addEventListener("click", () => setActiveTab("payments"));
   document.getElementById("tab-plans").addEventListener("click", () => setActiveTab("plans"));
   document.getElementById("tab-credits").addEventListener("click", () => setActiveTab("credits"));
 
-  // Language buttons (lightweight: rerender + placeholders)
+  // Language toggle (minimal UI strings)
   function setLang(next){
     lang = next;
     localStorage.setItem("easy-ledger-lang", lang);
     document.getElementById("lang-nl").classList.toggle("active", lang==="nl");
     document.getElementById("lang-en").classList.toggle("active", lang==="en");
-    document.getElementById("q").placeholder = t().searchPlaceholder;
-    document.getElementById("customerNo").placeholder = t().customerPlaceholder;
+    document.getElementById("q").placeholder = t().search;
+    document.getElementById("customerNo").placeholder = t().custPh;
     document.getElementById("btnLookup").textContent = t().lookup;
     document.getElementById("lblOpenTotal").textContent = t().openTotal;
-    document.getElementById("customerInfo").innerHTML = `${t().customer}: <b class="mono" id="activeCustomer">${activeCustomerNo}</b> · ${t().product}: <b id="activeProduct">${activeProduct}</b>`;
+    document.getElementById("customerInfo").innerHTML = `${t().cust}: <b class="mono" id="activeCustomer">${activeCustomerNo}</b> · ${t().product}: <b id="activeProduct">${activeProduct}</b>`;
     renderAll();
   }
   document.getElementById("lang-nl").addEventListener("click", () => setLang("nl"));
   document.getElementById("lang-en").addEventListener("click", () => setLang("en"));
 
-  // Init load customer 12345678
+  // Init: use querystring if present
+  const qsCustomer = getQueryParam("customer");
   loadCustomer("12345678");
   setLang(lang);
-  renderAll();
+
+  if(qsCustomer && customers[qsCustomer]){
+    lookupCustomer(qsCustomer, false);
+  } else {
+    document.getElementById("customerNo").value = activeCustomerNo;
+    setQueryCustomer(activeCustomerNo);
+    renderAll();
+  }
 </script>
 </body>
 </html>
