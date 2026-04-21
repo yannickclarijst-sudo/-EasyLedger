@@ -1,4 +1,19 @@
-<!doctype html>
+
+                        <!DOCTYPE html>
+                        <html lang="en">
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+							<style>
+								body {
+									background-color: white; /* Ensure the iframe has a white background */
+								}
+
+								
+							</style>
+                        </head>
+                        <body>
+                            <!doctype html>
 <html lang="nl">
 <head>
   <meta charset="utf-8" />
@@ -114,12 +129,8 @@
 
     /* PDF link styling */
     .pdfLink{display:inline-flex;align-items:center;gap:6px;}
-    .pdfIcon{
-      width:14px;height:14px;flex:0 0 auto;
-      color:var(--red);
-    }
+    .pdfIcon{width:14px;height:14px;flex:0 0 auto;color:var(--red);}
     .pdfIcon path{fill:currentColor;}
-    .pdfHint{color:var(--muted);}
 
     /* toggles */
     .toggleGroup{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
@@ -157,10 +168,10 @@
         </div>
         <div class="toolbar">
           <div class="tabs" role="tablist" aria-label="Overzicht tabs">
-            <button class="tabbtn active" id="tab-invoices" data-tab="invoices" role="tab" aria-selected="true" type="button">Facturen</button>
-            <button class="tabbtn" id="tab-payments" data-tab="payments" role="tab" aria-selected="false" type="button">Betalingen</button>
-            <button class="tabbtn" id="tab-plans" data-tab="plans" role="tab" aria-selected="false" type="button">Betalingsregelingen</button>
-            <button class="tabbtn" id="tab-credits" data-tab="credits" role="tab" aria-selected="false" type="button">Credit/Debit</button>
+            <button class="tabbtn active" id="tab-invoices" type="button">Facturen</button>
+            <button class="tabbtn" id="tab-payments" type="button">Betalingen</button>
+            <button class="tabbtn" id="tab-plans" type="button">Betalingsregelingen</button>
+            <button class="tabbtn" id="tab-credits" type="button">Credit/Debit</button>
           </div>
 
           <div class="toggleGroup">
@@ -251,7 +262,6 @@
           <tbody id="creditRows"></tbody>
         </table>
       </div>
-
     </div>
   </div>
 
@@ -276,7 +286,13 @@
       txNone: "Geen transacties.", txSummary: "Transacties",
       paymentPlanBadge: "Betalingsregeling",
       paymentPills: { Settled:"Verwerkt", Pending:"In verwerking", Rejected:"Afgewezen" },
-      invoicePills: { paid:"Betaald", partial:"Deels betaald", announced:"Aangekondigd", processing:"In behandeling", rejected:"Afgewezen" },
+      invoicePills: {
+        paid:"Betaald",
+        partial:"Deels betaald",
+        announced:"Aangekondigd",
+        pending:"In afschrijving",
+        rejected:"Afgewezen"
+      },
       planLinePills: { Paid:"Betaald", Scheduled:"Gepland", Pending:"In verwerking", Rejected:"Afgewezen" },
       resultMatched: "Matched",
       creditApplied: "Credit verrekend",
@@ -301,7 +317,13 @@
       txNone: "No transactions.", txSummary: "Transactions",
       paymentPlanBadge: "Payment plan",
       paymentPills: { Settled:"Processed", Pending:"Processing", Rejected:"Rejected" },
-      invoicePills: { paid:"Paid", partial:"Partially paid", announced:"Announced", processing:"Pending", rejected:"Rejected" },
+      invoicePills: {
+        paid:"Paid",
+        partial:"Partially paid",
+        announced:"Announced",
+        pending:"Pending",
+        rejected:"Rejected"
+      },
       planLinePills: { Paid:"Paid", Scheduled:"Scheduled", Pending:"Processing", Rejected:"Rejected" },
       resultMatched: "Matched",
       creditApplied: "Credit applied",
@@ -347,7 +369,6 @@
   }
   function invoiceName(inv){ return t().invoiceNameMonth(monthName(inv.docDate)); }
 
-  // Inline SVG PDF icon
   const pdfIconSvg = `
     <svg class="pdfIcon" viewBox="0 0 24 24" aria-hidden="true">
       <path d="M6 2h9l5 5v15a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm8 1.5V8h4.5L14 3.5zM7 14h2.2c1.5 0 2.3.8 2.3 2s-.8 2-2.3 2H8.5v2H7v-6zm2.1 2.7c.6 0 1-.3 1-.7s-.4-.7-1-.7H8.5v1.4h.6zM12.2 14h2.1c1.9 0 3.2 1.2 3.2 3s-1.3 3-3.2 3h-2.1v-6zm2.1 4.5c1 0 1.7-.6 1.7-1.5s-.7-1.5-1.7-1.5h-.6v3h.6zM18.3 14H22v1.5h-2.2V16H22v1.5h-2.2V20h-1.5v-6z"/>
@@ -403,6 +424,8 @@
       allocations:[{invoiceId:fixInvoiceId("901617100123"), amount:25.00},{invoiceId:fixInvoiceId("901617100124"), amount:10.00}] }
   ];
 
+  function invoicePdfUrl(invoiceId){ return `pdf/${invoiceId}.pdf`; }
+
   // ===== Calculations =====
   function settledPayments(){ return payments.filter(p => p.status === "Settled"); }
   function planPaidAllocations(){
@@ -442,25 +465,44 @@
   function computeOpenTotal(){
     return invoices.reduce((sum, inv) => sum + invoiceOpenAmount(inv), 0);
   }
-  function invoiceHasShopPayment(invoiceId){
+
+  function invoiceHasAnyPendingAttempt(invoiceId){
     return payments.some(p =>
-      p.status === "Settled" &&
-      (p.method || "").toLowerCase().includes("shop") &&
-      (p.allocations || []).some(a => a.invoiceId === invoiceId && a.amount > 0)
+      p.status === "Pending" &&
+      (p.allocations || []).some(a => a.invoiceId === invoiceId)
     );
   }
-  function planByInvoiceId(invoiceId){
-    return paymentPlans.find(p => (p.invoiceIds || []).includes(invoiceId));
+  function invoiceHasAnyRejectedAttempt(invoiceId){
+    return payments.some(p =>
+      p.status === "Rejected" &&
+      (p.allocations || []).some(a => a.invoiceId === invoiceId)
+    );
   }
+
+  // NEW status rules:
+  // - Paid: open == 0
+  // - Partially paid: 0 < open < amount (because of any settled payment, credit, plan-paid)
+  // - Pending: open == amount AND there is a pending debit attempt
+  // - Rejected: open == amount AND there is a rejected attempt (optional)
+  // - Announced: open == amount and no pending attempt
   function invoiceStatus(inv){
     const open = invoiceOpenAmount(inv);
     if(open === 0) return {key:"paid", label:t().invoicePills.paid};
-    if(open > 0 && invoiceHasShopPayment(inv.id)) return {key:"partial", label:t().invoicePills.partial};
-    if(planByInvoiceId(inv.id)) return {key:"processing", label:t().invoicePills.processing};
-    if(inv.phase === "rejected") return {key:"rejected", label:t().invoicePills.rejected};
-    if(inv.phase === "announced") return {key:"announced", label:t().invoicePills.announced};
-    return {key:"processing", label:t().invoicePills.processing};
+
+    if(open > 0 && open < inv.amount) return {key:"partial", label:t().invoicePills.partial};
+
+    // open == amount => nothing applied yet
+    if(invoiceHasAnyPendingAttempt(inv.id)) return {key:"processing", label:t().invoicePills.pending};
+
+    if(invoiceHasAnyRejectedAttempt(inv.id)) return {key:"rejected", label:t().invoicePills.rejected};
+
+    return {key:"announced", label:t().invoicePills.announced};
   }
+
+  function planByInvoiceId(invoiceId){
+    return paymentPlans.find(p => (p.invoiceIds || []).includes(invoiceId));
+  }
+
   function dunningInfo(inv){
     const st = invoiceStatus(inv).key;
     const hasPlan = !!planByInvoiceId(inv.id);
@@ -550,12 +592,6 @@
     `;
   }
 
-  // Demo PDF URL generator (replace with real Salesforce/CRM link later)
-  function invoicePdfUrl(invoiceId){
-    // simple placeholder path in GitHub Pages; create /pdf/<id>.pdf if you want real files
-    return `pdf/${invoiceId}.pdf`;
-  }
-
   let currentTab = "invoices";
 
   function sortInvoicesNewestFirst(list){ return [...list].sort((a,b) => b.docDate.localeCompare(a.docDate)); }
@@ -563,7 +599,7 @@
   function renderInvoices(list){
     const sorted = sortInvoicesNewestFirst(list);
     document.getElementById("rows").innerHTML = sorted.map(inv => {
-      const plan = paymentPlans.find(p => (p.invoiceIds || []).includes(inv.id));
+      const plan = planByInvoiceId(inv.id);
       const open = invoiceOpenAmount(inv);
       const pdfUrl = invoicePdfUrl(inv.id);
       return `
@@ -723,19 +759,10 @@
 
   function setActiveTab(tab){
     currentTab = tab;
-    const map = [
-      ["invoices","tab-invoices","panel-invoices"],
-      ["payments","tab-payments","panel-payments"],
-      ["plans","tab-plans","panel-plans"],
-      ["credits","tab-credits","panel-credits"],
-    ];
-    for(const [key, btnId, panelId] of map){
-      const isActive = (tab === key);
-      const btn = document.getElementById(btnId);
-      const panel = document.getElementById(panelId);
-      btn.classList.toggle("active", isActive);
-      btn.setAttribute("aria-selected", isActive ? "true" : "false");
-      panel.classList.toggle("hidden", !isActive);
+    const ids = ["invoices","payments","plans","credits"];
+    for(const k of ids){
+      document.getElementById(`panel-${k}`).classList.toggle("hidden", k !== tab);
+      document.getElementById(`tab-${k}`).classList.toggle("active", k === tab);
     }
     const q = document.getElementById("q").value;
     if(tab === "invoices") applyFilterInvoices(q);
@@ -829,6 +856,14 @@
 
   // init
   setLang(lang);
+  applyTheme(localStorage.getItem(THEME_KEY) || "light");
 </script>
 </body>
 </html>
+
+							<script>
+                            	
+							</script>
+                        </body>
+                        </html>
+                    
