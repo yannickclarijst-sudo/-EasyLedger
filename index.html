@@ -530,7 +530,7 @@
           <td>
             <div class="invCell">
               <div class="invName">${invoiceName(inv)}</div>
-              <a class="mono docLink invId" href="${docUrl}" target="_blank" rel="noopener" title="${t().openPdf}">
+<a class="mono docLink invId" href="${docUrl}" target="_blank" rel="noopener" title="${docMode === "openbv" ? "Open BV" : t().openPdf}">
                 ${icon}<span>${inv.id}</span>
               </a>
               ${plan ? `<span class="badge" onclick="openPlansTab('${plan.id}')">${lang==="nl" ? "Betalingsregeling" : "Payment plan"}</span>` : ``}
