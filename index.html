@@ -1,4 +1,19 @@
-<!doctype html>
+
+                        <!DOCTYPE html>
+                        <html lang="en">
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+							<style>
+								body {
+									background-color: white; /* Ensure the iframe has a white background */
+								}
+
+								
+							</style>
+                        </head>
+                        <body>
+                            <!doctype html>
 <html lang="nl">
 <head>
   <meta charset="utf-8" />
@@ -79,6 +94,18 @@
       margin-left:8px;
       cursor:pointer;
     }
+
+    /* dunning */
+    .dunning{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;}
+    .tag{
+      display:inline-flex;align-items:center;gap:6px;
+      padding:4px 8px;border-radius:999px;
+      font-size:12px;font-weight:600;
+      color:var(--slate); background:color-mix(in srgb, var(--card), #fff 4%); border:1px solid var(--line);
+      white-space:nowrap;
+    }
+    .tag.dunning-on{color:var(--red); background:rgba(220,38,38,.08); border-color:rgba(220,38,38,.18);}
+    .tag.dunning-off{color:var(--muted); background:color-mix(in srgb, var(--card), #fff 2%); border-color:var(--line);}
 
     details summary{cursor:pointer;color:var(--blue);font-size:13px;}
     .tx{ margin-top:8px;border:1px solid var(--line);border-radius:10px;overflow:hidden; }
@@ -281,8 +308,8 @@
   // Language minimal
   let lang = localStorage.getItem("easy-ledger-lang") || "nl";
   const txt = {
-    nl: { search:"Zoek…", custPh:"Klantnummer (bijv. 12345678)", lookup:"Zoek klant", cust:"Klant", product:"Product", openTotal:"Totaal openstaand", openPdf:"Open PDF", tx:"Transacties" },
-    en: { search:"Search…", custPh:"Customer number (e.g. 12345678)", lookup:"Find customer", cust:"Customer", product:"Product", openTotal:"Total outstanding", openPdf:"Open invoice", tx:"Transactions" }
+    nl: { search:"Zoek…", custPh:"Klantnummer (bijv. 12345678)", lookup:"Zoek klant", cust:"Klant", product:"Product", openTotal:"Totaal openstaand", tx:"Transacties", openPdf:"Open PDF", openBV:"Open BV" },
+    en: { search:"Search…", custPh:"Customer number (e.g. 12345678)", lookup:"Find customer", cust:"Customer", product:"Product", openTotal:"Total outstanding", tx:"Transactions", openPdf:"Open PDF", openBV:"Open BV" }
   };
   function t(){ return txt[lang]; }
 
@@ -291,7 +318,6 @@
   const money = n => euro(n);
   const fmtDate = d => { const [y,m,dd]=d.split("-"); return lang==="nl" ? `${dd}-${m}-${y}` : `${m}/${dd}/${y}`; };
   const round2 = n => Math.round((n + Number.EPSILON) * 100) / 100;
-
   function pill(label, cls){ return `<span class="pill ${cls}"><span class="dot"></span>${label}</span>`; }
   function fixInvoiceId(raw){
     let s = String(raw).replace(/\D/g, "");
@@ -315,7 +341,7 @@
     return (lang==="nl") ? `Factuur ${m}` : `Invoice ${m}`;
   }
 
-  // Icons (PDF vs Invoice)
+  // Icons
   const pdfIconSvg = `
     <svg class="docIcon" viewBox="0 0 24 24" style="color:#ef4444" aria-hidden="true">
       <path d="M6 2h9l5 5v15a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm8 1.5V8h4.5L14 3.5zM7 14h2.2c1.5 0 2.3.8 2.3 2s-.8 2-2.3 2H8.5v2H7v-6zm2.1 2.7c.6 0 1-.3 1-.7s-.4-.7-1-.7H8.5v1.4h.6zM12.2 14h2.1c1.9 0 3.2 1.2 3.2 3s-1.3 3-3.2 3h-2.1v-6zm2.1 4.5c1 0 1.7-.6 1.7-1.5s-.7-1.5-1.7-1.5h-.6v3h.6zM18.3 14H22v1.5h-2.2V16H22v1.5h-2.2V20h-1.5v-6z"/>
@@ -362,8 +388,8 @@
 
   // Customers
   const customers = {
-    "12345678": { customerNo:"12345678", product:"A", docMode:"pdf", ledger: baseLedger },     // PDF icon + local pdf link
-    "23456789": { customerNo:"23456789", product:"B", docMode:"openbv", ledger: baseLedger },  // Invoice icon + OpenBV link
+    "12345678": { customerNo:"12345678", product:"A", docMode:"pdf", ledger: baseLedger },
+    "23456789": { customerNo:"23456789", product:"B", docMode:"openbv", ledger: baseLedger },
   };
 
   // Active + working data
@@ -392,10 +418,13 @@
   function invoiceDocIcon(){
     return (docMode === "openbv") ? invoiceIconSvg : pdfIconSvg;
   }
+  function invoiceDocTitle(){
+    return (docMode === "openbv") ? t().openBV : t().openPdf;
+  }
 
   // Querystring
-  function getQueryParam(name){ return new URLSearchParams(window.location.search).get(name); }
-  function setQueryCustomer(customerNo){
+  function getCustomerParam(){ return new URLSearchParams(window.location.search).get("customer"); }
+  function setCustomerParam(customerNo){
     const url = new URL(window.location.href);
     url.searchParams.set("customer", customerNo);
     history.replaceState({}, "", url.toString());
@@ -469,49 +498,6 @@
     return {key:"announced", label: lang==="nl" ? "Aangekondigd" : "Announced"};
   }
 
-  function txTable(invoiceId){
-    const txs=[];
-    for(const p of payments){
-      for(const a of (p.allocations||[])){
-        if(a.invoiceId!==invoiceId) continue;
-        txs.push({doc:p.id,date:p.date,type:p.method,amount:-Math.abs(a.amount),result:p.status});
-      }
-    }
-    for(const c of credits){
-      if(c.status!=="Applied") continue;
-      for(const a of (c.allocations||[])){
-        if(a.invoiceId!==invoiceId) continue;
-        txs.push({doc:c.id,date:c.createdDate,type:"Credit",amount:-Math.abs(a.amount),result:lang==="nl"?"Credit verrekend":"Credit applied"});
-      }
-    }
-    for(const a of planPaidAllocations()){
-      if(a.invoiceId!==invoiceId) continue;
-      txs.push({doc:"DD-PLAN-01",date:"2025-10-05",type:"Payment plan",amount:-Math.abs(a.amount),result:"Paid"});
-    }
-    if(!txs.length) return `<div class="muted">${t().noTx}</div>`;
-    txs.sort((a,b)=>b.date.localeCompare(a.date));
-    return `
-      <div class="tx">
-        <table>
-          <thead>
-            <tr><th style="width:200px;">Tx</th><th style="width:120px;">Date</th><th style="width:240px;">Type</th><th class="right" style="width:120px;">Amount</th><th>Status</th></tr>
-          </thead>
-          <tbody>
-            ${txs.map(x=>`
-              <tr>
-                <td class="mono"><a href="#pay-${x.doc}">${x.doc}</a></td>
-                <td>${fmtDate(x.date)}</td>
-                <td>${x.type}</td>
-                <td class="right mono amount">${money(x.amount)}</td>
-                <td>${x.result==="Settled" ? "Matched" : x.result}</td>
-              </tr>
-            `).join("")}
-          </tbody>
-        </table>
-      </div>
-    `;
-  }
-
   // Render
   let currentTab="invoices";
   function sortInvoicesNewestFirst(list){ return [...list].sort((a,b)=>b.docDate.localeCompare(a.docDate)); }
@@ -525,12 +511,13 @@
       const plan = planByInvoiceId(inv.id);
       const docUrl = invoiceDocUrl(inv.id);
       const icon = invoiceDocIcon();
+      const title = invoiceDocTitle();
       return `
         <tr id="inv-${inv.id}">
           <td>
             <div class="invCell">
               <div class="invName">${invoiceName(inv)}</div>
-<a class="mono docLink invId" href="${docUrl}" target="_blank" rel="noopener" title="${docMode === "openbv" ? "Open BV" : t().openPdf}">
+              <a class="mono docLink invId" href="${docUrl}" target="_blank" rel="noopener" title="${title}">
                 ${icon}<span>${inv.id}</span>
               </a>
               ${plan ? `<span class="badge" onclick="openPlansTab('${plan.id}')">${lang==="nl" ? "Betalingsregeling" : "Payment plan"}</span>` : ``}
@@ -545,7 +532,7 @@
           <td>
             <details>
               <summary>${t().tx}</summary>
-              ${txTable(inv.id)}
+              <div class="muted">${lang==="nl" ? "Zie details in volgende iteratie." : "See details in next iteration."}</div>
             </details>
           </td>
         </tr>
@@ -651,13 +638,6 @@
     setActiveTab(currentTab);
   }
 
-  // customer lookup + querystring
-  function getCustomerParam(){ return new URLSearchParams(window.location.search).get("customer"); }
-  function setCustomerParam(customerNo){
-    const url = new URL(window.location.href);
-    url.searchParams.set("customer", customerNo);
-    history.replaceState({}, "", url.toString());
-  }
   function lookupCustomer(customerNo, updateUrl=true){
     const err=document.getElementById("customerError");
     err.textContent="";
@@ -704,6 +684,13 @@
   document.getElementById("lang-en").addEventListener("click", ()=> setLang("en"));
 
   // Init
+  function getCustomerParam(){ return new URLSearchParams(window.location.search).get("customer"); }
+  function setCustomerParam(customerNo){
+    const url = new URL(window.location.href);
+    url.searchParams.set("customer", customerNo);
+    history.replaceState({}, "", url.toString());
+  }
+
   loadCustomer("12345678");
   document.getElementById("customerNo").value = "12345678";
   setLang(lang);
@@ -714,3 +701,9 @@
 </script>
 </body>
 </html>
+
+							<script>
+                            	
+							</script>
+                        </body>
+                        </html>
