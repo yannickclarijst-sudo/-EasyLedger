@@ -80,18 +80,6 @@
       cursor:pointer;
     }
 
-    .dunning{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;}
-    .tag{
-      display:inline-flex;align-items:center;gap:6px;
-      padding:4px 8px;border-radius:999px;
-      font-size:12px;font-weight:600;
-      color:var(--slate); background:color-mix(in srgb, var(--card), #fff 4%); border:1px solid var(--line);
-      white-space:nowrap;
-    }
-    .tag.dunning-on{color:var(--red); background:rgba(220,38,38,.08); border-color:rgba(220,38,38,.18);}
-    .tag.dunning-off{color:var(--muted); background:color-mix(in srgb, var(--card), #fff 2%); border-color:var(--line);}
-    .tag.level{color:var(--slate);}
-
     details summary{cursor:pointer;color:var(--blue);font-size:13px;}
     .tx{ margin-top:8px;border:1px solid var(--line);border-radius:10px;overflow:hidden; }
     .tx table{width:100%;}
@@ -108,12 +96,12 @@
     .tabpanel{padding:0 16px 16px;}
     .hidden{display:none;}
 
-    /* invoice cell: NAME on top, PDF link UNDER it */
+    /* invoice cell: NAME on top, doc link under it */
     .invCell{display:flex;flex-direction:column;gap:6px;}
     .invName{font-weight:700;line-height:1.1;}
-    .pdfLink{display:inline-flex;align-items:center;gap:6px;}
-    .pdfIcon{width:14px;height:14px;flex:0 0 auto;color:var(--red);}
-    .pdfIcon path{fill:currentColor;}
+    .docLink{display:inline-flex;align-items:center;gap:6px;}
+    .docIcon{width:14px;height:14px;flex:0 0 auto;}
+    .docIcon path{fill:currentColor;}
     .invId{color:var(--blue);}
 
     .toggleGroup{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
@@ -201,7 +189,7 @@
       </div>
 
       <div class="sub">
-        <div id="subLeft">Regels: N/A  Dunning: N/A</div>
+        <div>Regels: N/A &nbsp; Dunning: N/A</div>
         <div class="kpis">
           <div class="kpi"><span id="lblOpenTotal">Totaal openstaand</span><b id="openTotal">€ 0,00</b></div>
         </div>
@@ -276,16 +264,6 @@
   </div>
 
 <script>
-  // minimal translations for placeholders/buttons only
-  const I18N = {
-    nl: { search:"Zoek…", custPh:"Klantnummer (bijv. 12345678)", lookup:"Zoek klant", cust:"Klant", product:"Product", openTotal:"Totaal openstaand", openPdf:"Open PDF",
-          planBadge:"Betalingsregeling", dunning:"Dunning", on:"Aan", off:"Uit", level:"Level", tx:"Transacties", noTx:"Geen transacties." },
-    en: { search:"Search…", custPh:"Customer number (e.g. 12345678)", lookup:"Find customer", cust:"Customer", product:"Product", openTotal:"Total outstanding", openPdf:"Open PDF",
-          planBadge:"Payment plan", dunning:"Dunning", on:"On", off:"Off", level:"Level", tx:"Transactions", noTx:"No transactions." }
-  };
-  let lang = localStorage.getItem("easy-ledger-lang") || "nl";
-  const t = () => I18N[lang];
-
   // Theme
   const THEME_KEY = "easy-ledger-theme";
   function applyTheme(theme){
@@ -300,11 +278,20 @@
     applyTheme(theme);
   });
 
+  // Language minimal
+  let lang = localStorage.getItem("easy-ledger-lang") || "nl";
+  const txt = {
+    nl: { search:"Zoek…", custPh:"Klantnummer (bijv. 12345678)", lookup:"Zoek klant", cust:"Klant", product:"Product", openTotal:"Totaal openstaand", openPdf:"Open PDF", tx:"Transacties" },
+    en: { search:"Search…", custPh:"Customer number (e.g. 12345678)", lookup:"Find customer", cust:"Customer", product:"Product", openTotal:"Total outstanding", openPdf:"Open invoice", tx:"Transactions" }
+  };
+  function t(){ return txt[lang]; }
+
   // Helpers
   const euro = n => (n<0?"-":"") + "€ " + Math.abs(n).toFixed(2).replace(".", ",");
   const money = n => euro(n);
   const fmtDate = d => { const [y,m,dd]=d.split("-"); return lang==="nl" ? `${dd}-${m}-${y}` : `${m}/${dd}/${y}`; };
   const round2 = n => Math.round((n + Number.EPSILON) * 100) / 100;
+
   function pill(label, cls){ return `<span class="pill ${cls}"><span class="dot"></span>${label}</span>`; }
   function fixInvoiceId(raw){
     let s = String(raw).replace(/\D/g, "");
@@ -312,12 +299,6 @@
     if (!s.startsWith("5")) s = "5" + s.slice(1);
     return s;
   }
-
-  const pdfIconSvg = `
-    <svg class="pdfIcon" viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M6 2h9l5 5v15a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm8 1.5V8h4.5L14 3.5zM7 14h2.2c1.5 0 2.3.8 2.3 2s-.8 2-2.3 2H8.5v2H7v-6zm2.1 2.7c.6 0 1-.3 1-.7s-.4-.7-1-.7H8.5v1.4h.6zM12.2 14h2.1c1.9 0 3.2 1.2 3.2 3s-1.3 3-3.2 3h-2.1v-6zm2.1 4.5c1 0 1.7-.6 1.7-1.5s-.7-1.5-1.7-1.5h-.6v3h.6zM18.3 14H22v1.5h-2.2V16H22v1.5h-2.2V20h-1.5v-6z"/>
-    </svg>
-  `;
 
   function monthNameNL(dateStr){
     const m = Number((dateStr||"").split("-")[1] || 1);
@@ -334,38 +315,38 @@
     return (lang==="nl") ? `Factuur ${m}` : `Invoice ${m}`;
   }
 
+  // Icons (PDF vs Invoice)
+  const pdfIconSvg = `
+    <svg class="docIcon" viewBox="0 0 24 24" style="color:#ef4444" aria-hidden="true">
+      <path d="M6 2h9l5 5v15a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm8 1.5V8h4.5L14 3.5zM7 14h2.2c1.5 0 2.3.8 2.3 2s-.8 2-2.3 2H8.5v2H7v-6zm2.1 2.7c.6 0 1-.3 1-.7s-.4-.7-1-.7H8.5v1.4h.6zM12.2 14h2.1c1.9 0 3.2 1.2 3.2 3s-1.3 3-3.2 3h-2.1v-6zm2.1 4.5c1 0 1.7-.6 1.7-1.5s-.7-1.5-1.7-1.5h-.6v3h.6zM18.3 14H22v1.5h-2.2V16H22v1.5h-2.2V20h-1.5v-6z"/>
+    </svg>
+  `;
+  const invoiceIconSvg = `
+    <svg class="docIcon" viewBox="0 0 24 24" style="color:#2563eb" aria-hidden="true">
+      <path d="M6 2h9l5 5v15a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm8 1.5V8h4.5L14 3.5zM7 12h10v2H7v-2zm0 4h10v2H7v-2z"/>
+    </svg>
+  `;
+
   // Base ledger
   const baseLedger = {
     invoices: [
-      {id:fixInvoiceId("901617100120"), docDate:"2026-02-27", dueDate:"2026-03-20", amount:115.69, phase:"announced"},
-      {id:fixInvoiceId("901617100121"), docDate:"2026-01-27", dueDate:"2026-02-17", amount:146.53, phase:"processing"},
-      {id:fixInvoiceId("901617100122"), docDate:"2025-12-27", dueDate:"2026-01-17", amount:120.73, phase:"announced"},
-      {id:fixInvoiceId("901617100123"), docDate:"2025-11-27", dueDate:"2025-12-18", amount:135.42, phase:"announced"},
-      {id:fixInvoiceId("901617100124"), docDate:"2025-10-27", dueDate:"2025-11-17", amount:129.95, phase:"announced"},
-      {id:fixInvoiceId("901617100125"), docDate:"2025-09-27", dueDate:"2025-10-18", amount:141.10, phase:"processing"},
-      {id:fixInvoiceId("901617100126"), docDate:"2025-08-27", dueDate:"2025-09-17", amount:135.25, phase:"announced"},
+      {id:fixInvoiceId("901617100120"), docDate:"2026-02-27", dueDate:"2026-03-20", amount:115.69},
+      {id:fixInvoiceId("901617100121"), docDate:"2026-01-27", dueDate:"2026-02-17", amount:146.53},
+      {id:fixInvoiceId("901617100122"), docDate:"2025-12-27", dueDate:"2026-01-17", amount:120.73},
+      {id:fixInvoiceId("901617100123"), docDate:"2025-11-27", dueDate:"2025-12-18", amount:135.42},
+      {id:fixInvoiceId("901617100124"), docDate:"2025-10-27", dueDate:"2025-11-17", amount:129.95},
+      {id:fixInvoiceId("901617100125"), docDate:"2025-09-27", dueDate:"2025-10-18", amount:141.10},
+      {id:fixInvoiceId("901617100126"), docDate:"2025-08-27", dueDate:"2025-09-17", amount:135.25},
     ],
     paymentPlans: [
-      {
-        id:"PLAN-SEP-2025-09",
-        invoiceIds:[ fixInvoiceId("901617100125"), fixInvoiceId("901617100126") ],
-        status:"Active",
-        total:141.10 + 135.25,
-        schedule:[
-          { term:1, dueDate:"2025-10-05", method:"Direct debit", doc:"DD-PLAN-01", status:"Paid",
-            allocations:[
-              {invoiceId:fixInvoiceId("901617100125"), amount:47.03},
-              {invoiceId:fixInvoiceId("901617100126"), amount:45.09}
-            ]
-          }
-        ]
-      }
+      { id:"PLAN-SEP-2025-09", invoiceIds:[fixInvoiceId("901617100125"),fixInvoiceId("901617100126")], status:"Active", total:276.35,
+        schedule:[{term:1,dueDate:"2025-10-05",method:"Direct debit",doc:"DD-PLAN-01",status:"Paid",allocations:[
+          {invoiceId:fixInvoiceId("901617100125"),amount:47.03},{invoiceId:fixInvoiceId("901617100126"),amount:45.09}
+        ]}] }
     ],
     credits: [
-      { id:"CR-20260105-001", createdDate:"2026-01-05", type:"Credit", amount:15.00, status:"Applied",
-        allocations:[{invoiceId: fixInvoiceId("901617100122"), amount:15.00}] },
-      { id:"CR-20260210-002", createdDate:"2026-02-10", type:"Credit", amount:20.00, status:"Applied",
-        allocations:[{invoiceId: fixInvoiceId("901617100120"), amount:20.00}] }
+      { id:"CR-20260105-001", createdDate:"2026-01-05", type:"Credit", amount:15.00, status:"Applied", allocations:[{invoiceId: fixInvoiceId("901617100122"), amount:15.00}] },
+      { id:"CR-20260210-002", createdDate:"2026-02-10", type:"Credit", amount:20.00, status:"Applied", allocations:[{invoiceId: fixInvoiceId("901617100120"), amount:20.00}] }
     ],
     payments: [
       { id:"PAY-20260228-BULK", date:"2026-02-28", method:"Bank transfer", status:"Settled", amount:200.00,
@@ -381,12 +362,12 @@
 
   // Customers
   const customers = {
-    "12345678": { customerNo:"12345678", product:"A", pdfMode:"local", ledger: baseLedger },
-    "23456789": { customerNo:"23456789", product:"B", pdfMode:"openbv", ledger: baseLedger },
+    "12345678": { customerNo:"12345678", product:"A", docMode:"pdf", ledger: baseLedger },     // PDF icon + local pdf link
+    "23456789": { customerNo:"23456789", product:"B", docMode:"openbv", ledger: baseLedger },  // Invoice icon + OpenBV link
   };
 
   // Active + working data
-  let activeCustomerNo="12345678", activeProduct="A", activePdfMode="local";
+  let activeCustomerNo="12345678", activeProduct="A", docMode="pdf";
   let invoices=[], paymentPlans=[], credits=[], payments=[];
 
   function clone(o){ return JSON.parse(JSON.stringify(o)); }
@@ -395,7 +376,7 @@
     if(!c) return false;
     activeCustomerNo = c.customerNo;
     activeProduct = c.product;
-    activePdfMode = c.pdfMode;
+    docMode = c.docMode;
     const ledger = clone(c.ledger);
     invoices = ledger.invoices;
     paymentPlans = ledger.paymentPlans;
@@ -404,9 +385,12 @@
     return true;
   }
 
-  function invoicePdfUrl(invoiceId){
-    if(activePdfMode === "openbv") return `https://openbv.example/invoice/${encodeURIComponent(invoiceId)}`;
+  function invoiceDocUrl(invoiceId){
+    if(docMode === "openbv") return `https://openbv.example/invoice/${encodeURIComponent(invoiceId)}`;
     return `pdf/${invoiceId}.pdf`;
+  }
+  function invoiceDocIcon(){
+    return (docMode === "openbv") ? invoiceIconSvg : pdfIconSvg;
   }
 
   // Querystring
@@ -420,20 +404,18 @@
   // Ledger calculations
   function settledPayments(){ return payments.filter(p => p.status==="Settled"); }
   function pendingPayments(){ return payments.filter(p => p.status==="Pending"); }
-
   function planPaidAllocations(){
     const allocs=[];
     for(const plan of paymentPlans){
       for(const line of (plan.schedule||[])){
         if(line.status!=="Paid") continue;
         for(const a of (line.allocations||[])){
-          allocs.push({invoiceId:a.invoiceId, amount:a.amount, planId:plan.id, doc:line.doc, date:line.dueDate, method:line.method});
+          allocs.push({invoiceId:a.invoiceId, amount:a.amount});
         }
       }
     }
     return allocs;
   }
-
   function creditAppliedAmount(invoiceId){
     let sum=0;
     for(const c of credits){
@@ -444,7 +426,6 @@
     }
     return round2(sum);
   }
-
   function settledPaidAmount(invoiceId){
     let sum=0;
     for(const p of settledPayments()){
@@ -454,7 +435,6 @@
     }
     return round2(sum);
   }
-
   function planPaidAmount(invoiceId){
     let sum=0;
     for(const a of planPaidAllocations()){
@@ -462,7 +442,6 @@
     }
     return round2(sum);
   }
-
   function invoicePaidAmount(invoiceId){
     return round2(settledPaidAmount(invoiceId) + creditAppliedAmount(invoiceId) + planPaidAmount(invoiceId));
   }
@@ -472,7 +451,6 @@
   function computeOpenTotal(){
     return round2(invoices.reduce((s,inv)=>s+invoiceOpenAmount(inv),0));
   }
-
   function invoiceHasPendingAttempt(invoiceId){
     return pendingPayments().some(p => (p.allocations||[]).some(a => a.invoiceId===invoiceId));
   }
@@ -482,7 +460,6 @@
   function invoiceHasAnySettledAllocation(invoiceId){
     return settledPaidAmount(invoiceId) > 0;
   }
-
   function invoiceStatus(inv){
     const open = invoiceOpenAmount(inv);
     if(open===0) return {key:"paid", label: lang==="nl" ? "Betaald" : "Paid"};
@@ -490,18 +467,6 @@
     if(invoiceHasPendingAttempt(inv.id)) return {key:"processing", label: lang==="nl" ? "In afschrijving" : "Pending"};
     if(invoiceHasAnySettledAllocation(inv.id) && open>0 && open<inv.amount) return {key:"partial", label: lang==="nl" ? "Deels betaald" : "Partially paid"};
     return {key:"announced", label: lang==="nl" ? "Aangekondigd" : "Announced"};
-  }
-
-  function dunningCell(inv){
-    const inPlan = !!planByInvoiceId(inv.id);
-    const st = invoiceStatus(inv).key;
-    const on = (st==="rejected" && inPlan);
-    return `
-      <div class="dunning">
-        <span class="tag ${on ? "dunning-on" : "dunning-off"}">${t().dunning}: ${on ? t().on : t().off}</span>
-        <span class="tag level">${t().level}: ${on ? 1 : 0}</span>
-      </div>
-    `;
   }
 
   function txTable(invoiceId){
@@ -521,7 +486,7 @@
     }
     for(const a of planPaidAllocations()){
       if(a.invoiceId!==invoiceId) continue;
-      txs.push({doc:a.doc,date:a.date,type:`${t().planBadge} (${a.planId})`,amount:-Math.abs(a.amount),result:"Paid"});
+      txs.push({doc:"DD-PLAN-01",date:"2025-10-05",type:"Payment plan",amount:-Math.abs(a.amount),result:"Paid"});
     }
     if(!txs.length) return `<div class="muted">${t().noTx}</div>`;
     txs.sort((a,b)=>b.date.localeCompare(a.date));
@@ -529,13 +494,7 @@
       <div class="tx">
         <table>
           <thead>
-            <tr>
-              <th style="width:200px;">Tx</th>
-              <th style="width:120px;">Date</th>
-              <th style="width:240px;">Type</th>
-              <th class="right" style="width:120px;">Amount</th>
-              <th>Status</th>
-            </tr>
+            <tr><th style="width:200px;">Tx</th><th style="width:120px;">Date</th><th style="width:240px;">Type</th><th class="right" style="width:120px;">Amount</th><th>Status</th></tr>
           </thead>
           <tbody>
             ${txs.map(x=>`
@@ -564,16 +523,17 @@
       const open = invoiceOpenAmount(inv);
       const st = invoiceStatus(inv);
       const plan = planByInvoiceId(inv.id);
-      const pdfUrl = invoicePdfUrl(inv.id);
+      const docUrl = invoiceDocUrl(inv.id);
+      const icon = invoiceDocIcon();
       return `
         <tr id="inv-${inv.id}">
           <td>
             <div class="invCell">
               <div class="invName">${invoiceName(inv)}</div>
-              <a class="mono pdfLink invId" href="${pdfUrl}" target="_blank" rel="noopener" title="${t().openPdf}">
-                ${pdfIconSvg}<span>${inv.id}</span>
+              <a class="mono docLink invId" href="${docUrl}" target="_blank" rel="noopener" title="${t().openPdf}">
+                ${icon}<span>${inv.id}</span>
               </a>
-              ${plan ? `<span class="badge" onclick="openPlansTab('${plan.id}')">${t().planBadge}</span>` : ``}
+              ${plan ? `<span class="badge" onclick="openPlansTab('${plan.id}')">${lang==="nl" ? "Betalingsregeling" : "Payment plan"}</span>` : ``}
             </div>
           </td>
           <td>${fmtDate(inv.docDate)}</td>
@@ -581,7 +541,7 @@
           <td class="right mono amount">${money(inv.amount)}</td>
           <td class="right mono amount">${money(open)}</td>
           <td>${pill(st.label, st.key)}</td>
-          <td>${dunningCell(inv)}</td>
+          <td class="muted">—</td>
           <td>
             <details>
               <summary>${t().tx}</summary>
@@ -623,14 +583,12 @@
     document.getElementById("openTotal").textContent = money(computeOpenTotal());
   }
 
-  function renderPlans(filterText=""){
-    const q = filterText.trim().toLowerCase();
-    const filtered = paymentPlans.filter(p => p.id.toLowerCase().includes(q) || (p.invoiceIds||[]).some(id=>id.toLowerCase().includes(q)));
-    document.getElementById("planRows").innerHTML = filtered.map(plan=>{
+  function renderPlans(){
+    document.getElementById("planRows").innerHTML = paymentPlans.map(plan=>{
       const invLinks = (plan.invoiceIds||[]).map(id => `<a class="mono" href="#inv-${id}">${id}</a>`).join(", ");
       return `
         <tr id="plan-${plan.id}">
-          <td class="mono"><a href="#plan-${plan.id}">${plan.id}</a></td>
+          <td class="mono">${plan.id}</td>
           <td>${invLinks}</td>
           <td>${pill(plan.status,"neutral")}</td>
           <td class="right mono amount">${money(plan.total)}</td>
@@ -641,10 +599,8 @@
     document.getElementById("openTotal").textContent = money(computeOpenTotal());
   }
 
-  function renderCredits(filterText=""){
-    const q = filterText.trim().toLowerCase();
-    const filtered = credits.filter(c => c.id.toLowerCase().includes(q) || (c.allocations||[]).some(a=>a.invoiceId.toLowerCase().includes(q)));
-    document.getElementById("creditRows").innerHTML = filtered.map(c=>{
+  function renderCredits(){
+    document.getElementById("creditRows").innerHTML = credits.map(c=>{
       const linkHtml = `<ul style="margin:0; padding-left:18px;">
         ${(c.allocations||[]).map(a=>`<li>Invoice <a class="mono" href="#inv-${a.invoiceId}">${a.invoiceId}</a> — <span class="mono">${money(a.amount)}</span></li>`).join("")}
       </ul>`;
@@ -672,8 +628,8 @@
     const q = document.getElementById("q").value;
     if(tab==="invoices") renderInvoices(q);
     if(tab==="payments") renderPayments(q);
-    if(tab==="plans") renderPlans(q);
-    if(tab==="credits") renderCredits(q);
+    if(tab==="plans") renderPlans();
+    if(tab==="credits") renderCredits();
   }
 
   function openPlansTab(planId){
@@ -689,21 +645,19 @@
     document.getElementById("activeCustomer").textContent = activeCustomerNo;
     document.getElementById("activeProduct").textContent = activeProduct;
   }
-
   function renderAll(){
     refreshCustomerHeader();
     document.getElementById("openTotal").textContent = money(computeOpenTotal());
     setActiveTab(currentTab);
   }
 
-  // Querystring support
-  function getQueryParam(name){ return new URLSearchParams(window.location.search).get(name); }
-  function setQueryCustomer(customerNo){
+  // customer lookup + querystring
+  function getCustomerParam(){ return new URLSearchParams(window.location.search).get("customer"); }
+  function setCustomerParam(customerNo){
     const url = new URL(window.location.href);
     url.searchParams.set("customer", customerNo);
     history.replaceState({}, "", url.toString());
   }
-
   function lookupCustomer(customerNo, updateUrl=true){
     const err=document.getElementById("customerError");
     err.textContent="";
@@ -713,7 +667,7 @@
     }
     document.getElementById("customerNo").value = customerNo;
     document.getElementById("q").value = "";
-    if(updateUrl) setQueryCustomer(customerNo);
+    if(updateUrl) setCustomerParam(customerNo);
     renderAll();
     return true;
   }
@@ -750,17 +704,13 @@
   document.getElementById("lang-en").addEventListener("click", ()=> setLang("en"));
 
   // Init
-  const qsCustomer = getQueryParam("customer");
   loadCustomer("12345678");
   document.getElementById("customerNo").value = "12345678";
   setLang(lang);
 
-  if(qsCustomer && customers[qsCustomer]){
-    lookupCustomer(qsCustomer,false);
-  } else {
-    setQueryCustomer("12345678");
-    renderAll();
-  }
+  const qs = getCustomerParam();
+  if(qs && customers[qs]) lookupCustomer(qs,false);
+  else { setCustomerParam("12345678"); renderAll(); }
 </script>
 </body>
 </html>
