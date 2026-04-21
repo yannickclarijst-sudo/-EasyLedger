@@ -1,19 +1,4 @@
-
-                        <!DOCTYPE html>
-                        <html lang="en">
-                        <head>
-                            <meta charset="UTF-8">
-                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-							<style>
-								body {
-									background-color: white; /* Ensure the iframe has a white background */
-								}
-
-								
-							</style>
-                        </head>
-                        <body>
-                            <!doctype html>
+<!doctype html>
 <html lang="nl">
 <head>
   <meta charset="utf-8" />
@@ -156,6 +141,19 @@
     }
     .langbtn.active{border-color:rgba(37,99,235,.35);box-shadow:0 0 0 3px rgba(37,99,235,.10);}
     html[data-theme="dark"] .langbtn.active{box-shadow:0 0 0 3px rgba(96,165,250,.18);}
+
+    /* validation banner */
+    .warn{
+      margin:0 16px 16px;
+      padding:10px 12px;
+      border:1px solid rgba(239,68,68,.35);
+      background:rgba(239,68,68,.08);
+      border-radius:10px;
+      color:var(--text);
+      display:none;
+      font-size:13px;
+    }
+    .warn b{color:var(--red);}
   </style>
 </head>
 <body>
@@ -197,6 +195,8 @@
           <div class="kpi"><span id="lblOpenTotal">Totaal openstaand</span><b id="openTotal">€ 0,00</b></div>
         </div>
       </div>
+
+      <div id="warn" class="warn"></div>
 
       <div id="panel-invoices" class="tabpanel">
         <table>
@@ -266,7 +266,6 @@
   </div>
 
 <script>
-  // ===== i18n =====
   const I18N = {
     nl: {
       searchPlaceholder: "Zoek op factuur, betaling, plan of credit…",
@@ -286,18 +285,15 @@
       txNone: "Geen transacties.", txSummary: "Transacties",
       paymentPlanBadge: "Betalingsregeling",
       paymentPills: { Settled:"Verwerkt", Pending:"In verwerking", Rejected:"Afgewezen" },
-      invoicePills: {
-        paid:"Betaald",
-        partial:"Deels betaald",
-        announced:"Aangekondigd",
-        pending:"In afschrijving",
-        rejected:"Afgewezen"
-      },
+      invoicePills: { paid:"Betaald", partial:"Deels betaald", announced:"Aangekondigd", pending:"In afschrijving", rejected:"Afgewezen", inplan:"In behandeling" },
       planLinePills: { Paid:"Betaald", Scheduled:"Gepland", Pending:"In verwerking", Rejected:"Afgewezen" },
       resultMatched: "Matched",
       creditApplied: "Credit verrekend",
       darkMode: "Dark mode",
-      openPdf: "Open PDF"
+      openPdf: "Open PDF",
+      warnTitle: "Data-check:",
+      warnLine: (inv, invAmt, settled, credited, planned) =>
+        `${inv}: factuur ${invAmt}, settled payments ${settled}, credits ${credited} (verwacht incasso: ${planned}).`
     },
     en: {
       searchPlaceholder: "Search invoice, payment, plan or credit…",
@@ -317,25 +313,22 @@
       txNone: "No transactions.", txSummary: "Transactions",
       paymentPlanBadge: "Payment plan",
       paymentPills: { Settled:"Processed", Pending:"Processing", Rejected:"Rejected" },
-      invoicePills: {
-        paid:"Paid",
-        partial:"Partially paid",
-        announced:"Announced",
-        pending:"Pending",
-        rejected:"Rejected"
-      },
+      invoicePills: { paid:"Paid", partial:"Partially paid", announced:"Announced", pending:"Pending", rejected:"Rejected", inplan:"Pending" },
       planLinePills: { Paid:"Paid", Scheduled:"Scheduled", Pending:"Processing", Rejected:"Rejected" },
       resultMatched: "Matched",
       creditApplied: "Credit applied",
       darkMode: "Dark mode",
-      openPdf: "Open PDF"
+      openPdf: "Open PDF",
+      warnTitle: "Data check:",
+      warnLine: (inv, invAmt, settled, credited, planned) =>
+        `${inv}: invoice ${invAmt}, settled payments ${settled}, credits ${credited} (expected debit: ${planned}).`
     }
   };
 
   let lang = localStorage.getItem("easy-ledger-lang") || "nl";
   function t(){ return I18N[lang]; }
 
-  // ===== Theme =====
+  // Theme
   const THEME_KEY = "easy-ledger-theme";
   function applyTheme(theme){
     if(theme === "dark") document.documentElement.setAttribute("data-theme","dark");
@@ -349,9 +342,9 @@
     applyTheme(theme);
   });
 
-  // ===== Helpers =====
+  // Helpers
   const euro = n => (n<0?"-":"") + "€ " + Math.abs(n).toFixed(2).replace(".", ",");
-  const money = n => euro(n); // always EUR
+  const money = n => euro(n);
   const fmtDate = d => {
     const [y,m,dd] = d.split("-");
     return lang==="nl" ? `${dd}-${m}-${y}` : `${m}/${dd}/${y}`;
@@ -368,6 +361,7 @@
     return t().months[m-1] || "";
   }
   function invoiceName(inv){ return t().invoiceNameMonth(monthName(inv.docDate)); }
+  function round2(n){ return Math.round((n + Number.EPSILON) * 100) / 100; }
 
   const pdfIconSvg = `
     <svg class="pdfIcon" viewBox="0 0 24 24" aria-hidden="true">
@@ -375,10 +369,11 @@
     </svg>
   `;
 
-  // ===== Data =====
+  // Data
   const invoices = [
     {id:fixInvoiceId("901617100120"), docDate:"2026-02-27", dueDate:"2026-03-20", amount:115.69, phase:"announced"},
     {id:fixInvoiceId("901617100121"), docDate:"2026-01-27", dueDate:"2026-02-17", amount:146.53, phase:"processing"},
+    // December: credit 15 applied BEFORE debit => debit should be 105.73
     {id:fixInvoiceId("901617100122"), docDate:"2025-12-27", dueDate:"2026-01-17", amount:120.73, phase:"announced"},
     {id:fixInvoiceId("901617100123"), docDate:"2025-11-27", dueDate:"2025-12-18", amount:135.42, phase:"announced"},
     {id:fixInvoiceId("901617100124"), docDate:"2025-10-27", dueDate:"2025-11-17", amount:129.95, phase:"announced"},
@@ -416,18 +411,25 @@
   const payments = [
     { id:"PAY-20260228-BULK", date:"2026-02-28", method:"Bank transfer", status:"Settled", amount:200.00,
       allocations:[{invoiceId: fixInvoiceId("901617100123"), amount:80.00},{invoiceId: fixInvoiceId("901617100124"), amount:120.00}] },
+
+    // This is the debit attempt => Pending (try to debit)
     { id:"PAY-20260219-0001", date:"2026-02-19", method:"Direct debit (SEPA DD)", status:"Pending", amount:146.53,
       allocations:[{invoiceId:fixInvoiceId("901617100121"), amount:146.53}] },
-    { id:"PAY-20260120-0009", date:"2026-01-20", method:"Direct debit (SEPA DD)", status:"Settled", amount:120.73,
-      allocations:[{invoiceId:fixInvoiceId("901617100122"), amount:120.73}] },
+
+    // FIX: December settled debit must be 105.73 (120.73 - 15.00 credit)
+    { id:"PAY-20260120-0009", date:"2026-01-20", method:"Direct debit (SEPA DD)", status:"Settled", amount:105.73,
+      allocations:[{invoiceId:fixInvoiceId("901617100122"), amount:105.73}] },
+
     { id:"PAY-20251210-SHOP", date:"2025-12-10", method:"Payment in shop", status:"Settled", amount:35.00,
       allocations:[{invoiceId:fixInvoiceId("901617100123"), amount:25.00},{invoiceId:fixInvoiceId("901617100124"), amount:10.00}] }
   ];
 
   function invoicePdfUrl(invoiceId){ return `pdf/${invoiceId}.pdf`; }
 
-  // ===== Calculations =====
+  // Allocations
   function settledPayments(){ return payments.filter(p => p.status === "Settled"); }
+  function pendingPayments(){ return payments.filter(p => p.status === "Pending"); }
+
   function planPaidAllocations(){
     const allocs = [];
     for(const plan of paymentPlans){
@@ -440,67 +442,90 @@
     }
     return allocs;
   }
-  function invoicePaidAmount(invoiceId){
+
+  function creditAppliedAmount(invoiceId){
     let sum = 0;
-    for(const p of settledPayments()){
-      for(const a of (p.allocations || [])){
-        if(a.invoiceId === invoiceId) sum += a.amount;
-      }
-    }
     for(const c of credits){
       if(c.status !== "Verrekend") continue;
       for(const a of (c.allocations || [])){
         if(a.invoiceId === invoiceId) sum += a.amount;
       }
     }
+    return round2(sum);
+  }
+
+  function settledPaidAmount(invoiceId){
+    let sum = 0;
+    for(const p of settledPayments()){
+      for(const a of (p.allocations || [])){
+        if(a.invoiceId === invoiceId) sum += a.amount;
+      }
+    }
+    return round2(sum);
+  }
+
+  function planPaidAmount(invoiceId){
+    let sum = 0;
     for(const a of planPaidAllocations()){
       if(a.invoiceId === invoiceId) sum += a.amount;
     }
-    return +sum.toFixed(2);
+    return round2(sum);
   }
+
+  function invoicePaidAmount(invoiceId){
+    return round2(settledPaidAmount(invoiceId) + creditAppliedAmount(invoiceId) + planPaidAmount(invoiceId));
+  }
+
   function invoiceOpenAmount(inv){
-    const paid = invoicePaidAmount(inv.id);
-    return Math.max(0, +(inv.amount - paid).toFixed(2));
+    return Math.max(0, round2(inv.amount - invoicePaidAmount(inv.id)));
   }
+
   function computeOpenTotal(){
-    return invoices.reduce((sum, inv) => sum + invoiceOpenAmount(inv), 0);
+    return round2(invoices.reduce((sum, inv) => sum + invoiceOpenAmount(inv), 0));
   }
 
-  function invoiceHasAnyPendingAttempt(invoiceId){
-    return payments.some(p =>
-      p.status === "Pending" &&
-      (p.allocations || []).some(a => a.invoiceId === invoiceId)
-    );
+  function invoiceHasPendingAttempt(invoiceId){
+    return pendingPayments().some(p => (p.allocations || []).some(a => a.invoiceId === invoiceId));
   }
-  function invoiceHasAnyRejectedAttempt(invoiceId){
-    return payments.some(p =>
-      p.status === "Rejected" &&
-      (p.allocations || []).some(a => a.invoiceId === invoiceId)
-    );
+  function invoiceHasRejectedAttempt(invoiceId){
+    return payments.some(p => p.status === "Rejected" && (p.allocations || []).some(a => a.invoiceId === invoiceId));
   }
-
-  // NEW status rules:
-  // - Paid: open == 0
-  // - Partially paid: 0 < open < amount (because of any settled payment, credit, plan-paid)
-  // - Pending: open == amount AND there is a pending debit attempt
-  // - Rejected: open == amount AND there is a rejected attempt (optional)
-  // - Announced: open == amount and no pending attempt
-  function invoiceStatus(inv){
-    const open = invoiceOpenAmount(inv);
-    if(open === 0) return {key:"paid", label:t().invoicePills.paid};
-
-    if(open > 0 && open < inv.amount) return {key:"partial", label:t().invoicePills.partial};
-
-    // open == amount => nothing applied yet
-    if(invoiceHasAnyPendingAttempt(inv.id)) return {key:"processing", label:t().invoicePills.pending};
-
-    if(invoiceHasAnyRejectedAttempt(inv.id)) return {key:"rejected", label:t().invoicePills.rejected};
-
-    return {key:"announced", label:t().invoicePills.announced};
+  function invoiceHasAnySettledAllocation(invoiceId){
+    return settledPaidAmount(invoiceId) > 0;
   }
 
   function planByInvoiceId(invoiceId){
     return paymentPlans.find(p => (p.invoiceIds || []).includes(invoiceId));
+  }
+
+  // UPDATED rules per your notes:
+  // 1) If invoice is in payment plan -> status is "In behandeling" (NL) / "Pending" (EN), even if partially paid.
+  // 2) Top invoice: credit is applied, but no pending debit attempt -> still "Announced" (so credit doesn't force partial).
+  //    => Partial should only be shown if there is a settled payment OR plan paid installment (not just credit).
+  // 3) Pending means: we are trying to debit => there is a Pending payment linked to invoice.
+  function invoiceStatus(inv){
+    const open = invoiceOpenAmount(inv);
+    const inPlan = !!planByInvoiceId(inv.id);
+
+    // Paid always wins
+    if(open === 0) return {key:"paid", label:t().invoicePills.paid};
+
+    // Payment plan overrides "partial"
+    if(inPlan) return {key:"processing", label:t().invoicePills.inplan};
+
+    // Pending attempt
+    if(invoiceHasPendingAttempt(inv.id)) return {key:"processing", label:t().invoicePills.pending};
+
+    // Rejected attempt (optional)
+    if(invoiceHasRejectedAttempt(inv.id)) return {key:"rejected", label:t().invoicePills.rejected};
+
+    // Deels betaald only if there is an ACTUAL received payment (settled) or paid plan installment (but plan is handled above)
+    if(invoiceHasAnySettledAllocation(inv.id) && open > 0 && open < inv.amount) {
+      return {key:"partial", label:t().invoicePills.partial};
+    }
+
+    // Otherwise announced (even if there is only a credit applied)
+    return {key:"announced", label:t().invoicePills.announced};
   }
 
   function dunningInfo(inv){
@@ -592,6 +617,32 @@
     `;
   }
 
+  // Validation banner (check mismatches)
+  function validateData(){
+    const issues = [];
+    for(const inv of invoices){
+      const settled = settledPaidAmount(inv.id);
+      const credited = creditAppliedAmount(inv.id);
+      const expectedDebit = round2(inv.amount - credited); // if credit pre-applied, expected debit is lower
+      // If there is a settled DD allocation for this invoice, it should not exceed expectedDebit (demo rule)
+      const ddSettled = payments
+        .filter(p => p.status==="Settled" && (p.method||"").toLowerCase().includes("debit"))
+        .flatMap(p => (p.allocations||[]).filter(a => a.invoiceId===inv.id).map(a => a.amount))
+        .reduce((s,x)=>s+x,0);
+      if(ddSettled > expectedDebit + 0.001){
+        issues.push(t().warnLine(inv.id, money(inv.amount), money(settled), money(credited), money(expectedDebit)));
+      }
+    }
+    const warn = document.getElementById("warn");
+    if(issues.length){
+      warn.style.display = "block";
+      warn.innerHTML = `<b>${t().warnTitle}</b><br>${issues.map(x=>`• ${x}`).join("<br>")}`;
+    } else {
+      warn.style.display = "none";
+      warn.innerHTML = "";
+    }
+  }
+
   let currentTab = "invoices";
 
   function sortInvoicesNewestFirst(list){ return [...list].sort((a,b) => b.docDate.localeCompare(a.docDate)); }
@@ -607,12 +658,9 @@
           <td>
             <div class="invCell">
               <span class="invName">${invoiceName(inv)}</span>
-
               <a class="mono invId pdfLink" href="${pdfUrl}" target="_blank" rel="noopener" title="${t().openPdf}">
-                ${pdfIconSvg}
-                <span>${inv.id}</span>
+                ${pdfIconSvg}<span>${inv.id}</span>
               </a>
-
               ${plan ? `<span class="badge" onclick="openPlansTab('${plan.id}')" title="${t().paymentPlanBadge}">${t().paymentPlanBadge}</span>` : ``}
             </div>
           </td>
@@ -632,6 +680,7 @@
       `;
     }).join("");
     document.getElementById("openTotal").textContent = money(computeOpenTotal());
+    validateData();
   }
 
   function renderPayments(filterText){
@@ -647,10 +696,7 @@
       const allocHtml = alloc.length
         ? `<ul style="margin:0; padding-left:18px;">
             ${alloc.map(a => `
-              <li>
-                ${t().headers.invoice} <a class="mono" href="#inv-${a.invoiceId}">${a.invoiceId}</a>
-                — <span class="mono">${money(a.amount)}</span>
-              </li>
+              <li>${t().headers.invoice} <a class="mono" href="#inv-${a.invoiceId}">${a.invoiceId}</a> — <span class="mono">${money(a.amount)}</span></li>
             `).join("")}
           </ul>`
         : `<span class="muted">—</span>`;
@@ -666,6 +712,7 @@
       `;
     }).join("");
     document.getElementById("openTotal").textContent = money(computeOpenTotal());
+    validateData();
   }
 
   function scheduleTable(plan){
@@ -724,6 +771,7 @@
       `;
     }).join("");
     document.getElementById("openTotal").textContent = money(computeOpenTotal());
+    validateData();
   }
 
   function renderCredits(filterText){
@@ -737,10 +785,7 @@
     document.getElementById("creditRows").innerHTML = filtered.map(c => {
       const linkHtml = `<ul style="margin:0; padding-left:18px;">
         ${(c.allocations||[]).map(a => `
-          <li>
-            ${t().headers.invoice} <a class="mono" href="#inv-${a.invoiceId}">${a.invoiceId}</a>
-            — <span class="mono">${money(a.amount)}</span>
-          </li>
+          <li>${t().headers.invoice} <a class="mono" href="#inv-${a.invoiceId}">${a.invoiceId}</a> — <span class="mono">${money(a.amount)}</span></li>
         `).join("")}
       </ul>`;
       return `
@@ -755,6 +800,7 @@
       `;
     }).join("");
     document.getElementById("openTotal").textContent = money(computeOpenTotal());
+    validateData();
   }
 
   function setActiveTab(tab){
@@ -860,10 +906,3 @@
 </script>
 </body>
 </html>
-
-							<script>
-                            	
-							</script>
-                        </body>
-                        </html>
-                    
