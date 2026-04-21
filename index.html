@@ -108,13 +108,13 @@
     .tabpanel{padding:0 16px 16px;}
     .hidden{display:none;}
 
-    .invCell{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;}
-    .invName{font-weight:700;}
-    .invId{color:var(--muted);font-size:12px;}
-
+    /* invoice cell: NAME on top, PDF link UNDER it */
+    .invCell{display:flex;flex-direction:column;gap:6px;}
+    .invName{font-weight:700;line-height:1.1;}
     .pdfLink{display:inline-flex;align-items:center;gap:6px;}
     .pdfIcon{width:14px;height:14px;flex:0 0 auto;color:var(--red);}
     .pdfIcon path{fill:currentColor;}
+    .invId{color:var(--blue);}
 
     .toggleGroup{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
     .switch{display:inline-flex;align-items:center;gap:10px;color:var(--muted);font-size:13px;user-select:none;}
@@ -196,7 +196,7 @@
       <div class="customerBox">
         <input id="customerNo" type="text" inputmode="numeric" placeholder="Klantnummer (bijv. 12345678)" />
         <button class="btn" id="btnLookup" type="button">Zoek klant</button>
-        <span class="customerTag" id="customerInfo">Klant: <b class="mono" id="activeCustomer">12345678</b> · Product: <b id="activeProduct">TBD</b></span>
+        <span class="customerTag" id="customerInfo">Klant: <b class="mono" id="activeCustomer">12345678</b> · Product: <b id="activeProduct">A</b></span>
         <span class="error" id="customerError"></span>
       </div>
 
@@ -276,18 +276,12 @@
   </div>
 
 <script>
-  // Minimal i18n (kept simple)
+  // minimal translations for placeholders/buttons only
   const I18N = {
-    nl: { search:"Zoek…", custPh:"Klantnummer (bijv. 12345678)", lookup:"Zoek klant", cust:"Klant", product:"Product",
-          openTotal:"Totaal openstaand", openPdf:"Open PDF", planBadge:"Betalingsregeling",
-          pills:{paid:"Betaald", partial:"Deels betaald", announced:"Aangekondigd", pending:"In afschrijving", inplan:"In behandeling", rejected:"Afgewezen"},
-          payPills:{Settled:"Verwerkt", Pending:"In verwerking", Rejected:"Afgewezen"},
-          dunning:"Dunning", on:"Aan", off:"Uit", level:"Level", tx:"Transacties", noTx:"Geen transacties.", creditApplied:"Credit verrekend" },
-    en: { search:"Search…", custPh:"Customer number (e.g. 12345678)", lookup:"Find customer", cust:"Customer", product:"Product",
-          openTotal:"Total outstanding", openPdf:"Open PDF", planBadge:"Payment plan",
-          pills:{paid:"Paid", partial:"Partially paid", announced:"Announced", pending:"Pending", inplan:"Pending", rejected:"Rejected"},
-          payPills:{Settled:"Processed", Pending:"Processing", Rejected:"Rejected"},
-          dunning:"Dunning", on:"On", off:"Off", level:"Level", tx:"Transactions", noTx:"No transactions.", creditApplied:"Credit applied" }
+    nl: { search:"Zoek…", custPh:"Klantnummer (bijv. 12345678)", lookup:"Zoek klant", cust:"Klant", product:"Product", openTotal:"Totaal openstaand", openPdf:"Open PDF",
+          planBadge:"Betalingsregeling", dunning:"Dunning", on:"Aan", off:"Uit", level:"Level", tx:"Transacties", noTx:"Geen transacties." },
+    en: { search:"Search…", custPh:"Customer number (e.g. 12345678)", lookup:"Find customer", cust:"Customer", product:"Product", openTotal:"Total outstanding", openPdf:"Open PDF",
+          planBadge:"Payment plan", dunning:"Dunning", on:"On", off:"Off", level:"Level", tx:"Transactions", noTx:"No transactions." }
   };
   let lang = localStorage.getItem("easy-ledger-lang") || "nl";
   const t = () => I18N[lang];
@@ -325,7 +319,22 @@
     </svg>
   `;
 
-  // Base ledger (no brand names)
+  function monthNameNL(dateStr){
+    const m = Number((dateStr||"").split("-")[1] || 1);
+    const names = ["Januari","Februari","Maart","April","Mei","Juni","Juli","Augustus","September","Oktober","November","December"];
+    return names[m-1] || "";
+  }
+  function monthNameEN(dateStr){
+    const m = Number((dateStr||"").split("-")[1] || 1);
+    const names = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+    return names[m-1] || "";
+  }
+  function invoiceName(inv){
+    const m = (lang==="nl") ? monthNameNL(inv.docDate) : monthNameEN(inv.docDate);
+    return (lang==="nl") ? `Factuur ${m}` : `Invoice ${m}`;
+  }
+
+  // Base ledger
   const baseLedger = {
     invoices: [
       {id:fixInvoiceId("901617100120"), docDate:"2026-02-27", dueDate:"2026-03-20", amount:115.69, phase:"announced"},
@@ -348,9 +357,7 @@
               {invoiceId:fixInvoiceId("901617100125"), amount:47.03},
               {invoiceId:fixInvoiceId("901617100126"), amount:45.09}
             ]
-          },
-          { term:2, dueDate:"2025-11-05", method:"Direct debit", doc:"DD-PLAN-02", status:"Scheduled", allocations:[] },
-          { term:3, dueDate:"2025-12-05", method:"Direct debit", doc:"DD-PLAN-03", status:"Scheduled", allocations:[] }
+          }
         ]
       }
     ],
@@ -372,16 +379,15 @@
     ]
   };
 
+  // Customers
   const customers = {
-    "12345678": { customerNo:"12345678", product:"TBD", pdfMode:"local", ledger: baseLedger },
-    "23456789": { customerNo:"23456789", product:"Open BV", pdfMode:"openbv", ledger: baseLedger },
+    "12345678": { customerNo:"12345678", product:"A", pdfMode:"local", ledger: baseLedger },
+    "23456789": { customerNo:"23456789", product:"B", pdfMode:"openbv", ledger: baseLedger },
   };
 
-  // Active context + working data
-  let activeCustomerNo = "12345678";
-  let activeProduct = "TBD";
-  let activePdfMode = "local";
-  let invoices = [], paymentPlans = [], credits = [], payments = [];
+  // Active + working data
+  let activeCustomerNo="12345678", activeProduct="A", activePdfMode="local";
+  let invoices=[], paymentPlans=[], credits=[], payments=[];
 
   function clone(o){ return JSON.parse(JSON.stringify(o)); }
   function loadCustomer(customerNo){
@@ -390,7 +396,6 @@
     activeCustomerNo = c.customerNo;
     activeProduct = c.product;
     activePdfMode = c.pdfMode;
-
     const ledger = clone(c.ledger);
     invoices = ledger.invoices;
     paymentPlans = ledger.paymentPlans;
@@ -413,16 +418,16 @@
   }
 
   // Ledger calculations
-  function settledPayments(){ return payments.filter(p => p.status === "Settled"); }
-  function pendingPayments(){ return payments.filter(p => p.status === "Pending"); }
+  function settledPayments(){ return payments.filter(p => p.status==="Settled"); }
+  function pendingPayments(){ return payments.filter(p => p.status==="Pending"); }
 
   function planPaidAllocations(){
-    const allocs = [];
+    const allocs=[];
     for(const plan of paymentPlans){
       for(const line of (plan.schedule||[])){
-        if(line.status !== "Paid") continue;
+        if(line.status!=="Paid") continue;
         for(const a of (line.allocations||[])){
-          allocs.push({planId:plan.id, doc:line.doc, date:line.dueDate, method:line.method, invoiceId:a.invoiceId, amount:a.amount});
+          allocs.push({invoiceId:a.invoiceId, amount:a.amount, planId:plan.id, doc:line.doc, date:line.dueDate, method:line.method});
         }
       }
     }
@@ -430,30 +435,30 @@
   }
 
   function creditAppliedAmount(invoiceId){
-    let sum = 0;
+    let sum=0;
     for(const c of credits){
-      if(c.status !== "Applied") continue;
+      if(c.status!=="Applied") continue;
       for(const a of (c.allocations||[])){
-        if(a.invoiceId === invoiceId) sum += a.amount;
+        if(a.invoiceId===invoiceId) sum += a.amount;
       }
     }
     return round2(sum);
   }
 
   function settledPaidAmount(invoiceId){
-    let sum = 0;
+    let sum=0;
     for(const p of settledPayments()){
       for(const a of (p.allocations||[])){
-        if(a.invoiceId === invoiceId) sum += a.amount;
+        if(a.invoiceId===invoiceId) sum += a.amount;
       }
     }
     return round2(sum);
   }
 
   function planPaidAmount(invoiceId){
-    let sum = 0;
+    let sum=0;
     for(const a of planPaidAllocations()){
-      if(a.invoiceId === invoiceId) sum += a.amount;
+      if(a.invoiceId===invoiceId) sum += a.amount;
     }
     return round2(sum);
   }
@@ -469,31 +474,27 @@
   }
 
   function invoiceHasPendingAttempt(invoiceId){
-    return pendingPayments().some(p => (p.allocations||[]).some(a => a.invoiceId === invoiceId));
-  }
-  function invoiceHasRejectedAttempt(invoiceId){
-    return payments.some(p => p.status==="Rejected" && (p.allocations||[]).some(a => a.invoiceId === invoiceId));
-  }
-  function invoiceHasAnySettledAllocation(invoiceId){
-    return settledPaidAmount(invoiceId) > 0;
+    return pendingPayments().some(p => (p.allocations||[]).some(a => a.invoiceId===invoiceId));
   }
   function planByInvoiceId(invoiceId){
     return paymentPlans.find(p => (p.invoiceIds||[]).includes(invoiceId));
   }
+  function invoiceHasAnySettledAllocation(invoiceId){
+    return settledPaidAmount(invoiceId) > 0;
+  }
 
   function invoiceStatus(inv){
     const open = invoiceOpenAmount(inv);
-    if(open === 0) return {key:"paid", label:t().pills.paid};
-    if(planByInvoiceId(inv.id)) return {key:"processing", label:t().pills.inplan};
-    if(invoiceHasPendingAttempt(inv.id)) return {key:"processing", label:t().pills.pending};
-    if(invoiceHasRejectedAttempt(inv.id)) return {key:"rejected", label:t().pills.rejected};
-    if(invoiceHasAnySettledAllocation(inv.id) && open > 0 && open < inv.amount) return {key:"partial", label:t().pills.partial};
-    return {key:"announced", label:t().pills.announced};
+    if(open===0) return {key:"paid", label: lang==="nl" ? "Betaald" : "Paid"};
+    if(planByInvoiceId(inv.id)) return {key:"processing", label: lang==="nl" ? "In behandeling" : "Pending"};
+    if(invoiceHasPendingAttempt(inv.id)) return {key:"processing", label: lang==="nl" ? "In afschrijving" : "Pending"};
+    if(invoiceHasAnySettledAllocation(inv.id) && open>0 && open<inv.amount) return {key:"partial", label: lang==="nl" ? "Deels betaald" : "Partially paid"};
+    return {key:"announced", label: lang==="nl" ? "Aangekondigd" : "Announced"};
   }
 
   function dunningCell(inv){
-    const st = invoiceStatus(inv).key;
     const inPlan = !!planByInvoiceId(inv.id);
+    const st = invoiceStatus(inv).key;
     const on = (st==="rejected" && inPlan);
     return `
       <div class="dunning">
@@ -503,31 +504,23 @@
     `;
   }
 
-  function paymentStatusPill(status){
-    const map = t().payPills;
-    if(status==="Settled") return pill(map.Settled,"success");
-    if(status==="Pending") return pill(map.Pending,"warning");
-    if(status==="Rejected") return pill(map.Rejected,"danger");
-    return pill(status,"neutral");
-  }
-
   function txTable(invoiceId){
-    const txs = [];
+    const txs=[];
     for(const p of payments){
       for(const a of (p.allocations||[])){
-        if(a.invoiceId !== invoiceId) continue;
+        if(a.invoiceId!==invoiceId) continue;
         txs.push({doc:p.id,date:p.date,type:p.method,amount:-Math.abs(a.amount),result:p.status});
       }
     }
     for(const c of credits){
       if(c.status!=="Applied") continue;
       for(const a of (c.allocations||[])){
-        if(a.invoiceId !== invoiceId) continue;
-        txs.push({doc:c.id,date:c.createdDate,type:"Credit",amount:-Math.abs(a.amount),result:t().creditApplied});
+        if(a.invoiceId!==invoiceId) continue;
+        txs.push({doc:c.id,date:c.createdDate,type:"Credit",amount:-Math.abs(a.amount),result:lang==="nl"?"Credit verrekend":"Credit applied"});
       }
     }
     for(const a of planPaidAllocations()){
-      if(a.invoiceId !== invoiceId) continue;
+      if(a.invoiceId!==invoiceId) continue;
       txs.push({doc:a.doc,date:a.date,type:`${t().planBadge} (${a.planId})`,amount:-Math.abs(a.amount),result:"Paid"});
     }
     if(!txs.length) return `<div class="muted">${t().noTx}</div>`;
@@ -551,7 +544,7 @@
                 <td>${fmtDate(x.date)}</td>
                 <td>${x.type}</td>
                 <td class="right mono amount">${money(x.amount)}</td>
-                <td>${x.result==="Settled" ? t().resultMatched : x.result}</td>
+                <td>${x.result==="Settled" ? "Matched" : x.result}</td>
               </tr>
             `).join("")}
           </tbody>
@@ -560,27 +553,27 @@
     `;
   }
 
-  // Rendering
-  let currentTab = "invoices";
+  // Render
+  let currentTab="invoices";
   function sortInvoicesNewestFirst(list){ return [...list].sort((a,b)=>b.docDate.localeCompare(a.docDate)); }
 
   function renderInvoices(filterText=""){
     const q = filterText.trim().toLowerCase();
-    const list = sortInvoicesNewestFirst(invoices).filter(inv => inv.id.toLowerCase().includes(q));
+    const list = sortInvoicesNewestFirst(invoices).filter(inv => inv.id.toLowerCase().includes(q) || invoiceName(inv).toLowerCase().includes(q));
     document.getElementById("rows").innerHTML = list.map(inv=>{
       const open = invoiceOpenAmount(inv);
+      const st = invoiceStatus(inv);
       const plan = planByInvoiceId(inv.id);
       const pdfUrl = invoicePdfUrl(inv.id);
-      const st = invoiceStatus(inv);
       return `
         <tr id="inv-${inv.id}">
           <td>
             <div class="invCell">
-              <span class="invName">${lang==="nl" ? "Factuur" : "Invoice"}</span>
-              <a class="mono invId pdfLink" href="${pdfUrl}" target="_blank" rel="noopener" title="${t().openPdf}">
+              <div class="invName">${invoiceName(inv)}</div>
+              <a class="mono pdfLink invId" href="${pdfUrl}" target="_blank" rel="noopener" title="${t().openPdf}">
                 ${pdfIconSvg}<span>${inv.id}</span>
               </a>
-              ${plan ? `<span class="badge" onclick="openPlansTab('${plan.id}')" title="${t().planBadge}">${t().planBadge}</span>` : ``}
+              ${plan ? `<span class="badge" onclick="openPlansTab('${plan.id}')">${t().planBadge}</span>` : ``}
             </div>
           </td>
           <td>${fmtDate(inv.docDate)}</td>
@@ -621,7 +614,7 @@
           <td class="mono"><a href="#pay-${p.id}">${p.id}</a></td>
           <td>${fmtDate(p.date)}</td>
           <td>${p.method}</td>
-          <td>${paymentStatusPill(p.status)}</td>
+          <td>${pill(p.status, p.status==="Settled"?"success":p.status==="Pending"?"warning":"neutral")}</td>
           <td class="right mono amount">${money(p.amount)}</td>
           <td>${allocHtml}</td>
         </tr>
@@ -630,57 +623,18 @@
     document.getElementById("openTotal").textContent = money(computeOpenTotal());
   }
 
-  function scheduleTable(plan){
-    return `
-      <div class="tx">
-        <table>
-          <thead>
-            <tr>
-              <th style="width:90px;">#</th>
-              <th style="width:120px;">Due</th>
-              <th style="width:160px;">Method</th>
-              <th style="width:160px;">Ref</th>
-              <th class="right" style="width:120px;">Amount</th>
-              <th style="width:220px;">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${(plan.schedule||[]).map(s=>`
-              <tr>
-                <td class="mono">${s.term}</td>
-                <td>${fmtDate(s.dueDate)}</td>
-                <td>${s.method}</td>
-                <td class="mono">${s.doc}</td>
-                <td class="right mono amount">${money(-Math.abs((s.allocations||[]).reduce((x,a)=>x+a.amount,0)))}</td>
-                <td>${pill(s.status, "neutral")}</td>
-              </tr>
-            `).join("")}
-          </tbody>
-        </table>
-      </div>
-    `;
-  }
-
   function renderPlans(filterText=""){
     const q = filterText.trim().toLowerCase();
-    const filtered = paymentPlans.filter(p =>
-      p.id.toLowerCase().includes(q) ||
-      (p.invoiceIds||[]).some(id => id.toLowerCase().includes(q))
-    );
+    const filtered = paymentPlans.filter(p => p.id.toLowerCase().includes(q) || (p.invoiceIds||[]).some(id=>id.toLowerCase().includes(q)));
     document.getElementById("planRows").innerHTML = filtered.map(plan=>{
       const invLinks = (plan.invoiceIds||[]).map(id => `<a class="mono" href="#inv-${id}">${id}</a>`).join(", ");
       return `
         <tr id="plan-${plan.id}">
           <td class="mono"><a href="#plan-${plan.id}">${plan.id}</a></td>
           <td>${invLinks}</td>
-          <td>${pill(plan.status, "neutral")}</td>
+          <td>${pill(plan.status,"neutral")}</td>
           <td class="right mono amount">${money(plan.total)}</td>
-          <td>
-            <details open>
-              <summary>${lang==="nl" ? "Termijnen" : "Installments"}</summary>
-              ${scheduleTable(plan)}
-            </details>
-          </td>
+          <td class="muted">—</td>
         </tr>
       `;
     }).join("");
@@ -689,10 +643,7 @@
 
   function renderCredits(filterText=""){
     const q = filterText.trim().toLowerCase();
-    const filtered = credits.filter(c =>
-      c.id.toLowerCase().includes(q) ||
-      (c.allocations||[]).some(a => a.invoiceId.toLowerCase().includes(q))
-    );
+    const filtered = credits.filter(c => c.id.toLowerCase().includes(q) || (c.allocations||[]).some(a=>a.invoiceId.toLowerCase().includes(q)));
     document.getElementById("creditRows").innerHTML = filtered.map(c=>{
       const linkHtml = `<ul style="margin:0; padding-left:18px;">
         ${(c.allocations||[]).map(a=>`<li>Invoice <a class="mono" href="#inv-${a.invoiceId}">${a.invoiceId}</a> — <span class="mono">${money(a.amount)}</span></li>`).join("")}
@@ -703,7 +654,7 @@
           <td>${fmtDate(c.createdDate)}</td>
           <td>${c.type}</td>
           <td class="right mono amount">${money(c.amount)}</td>
-          <td>${pill(c.status, "success")}</td>
+          <td>${pill(lang==="nl"?"Verrekend":"Applied","success")}</td>
           <td>${linkHtml}</td>
         </tr>
       `;
@@ -713,10 +664,10 @@
 
   function setActiveTab(tab){
     currentTab = tab;
-    const ids = ["invoices","payments","plans","credits"];
+    const ids=["invoices","payments","plans","credits"];
     for(const k of ids){
-      document.getElementById(`panel-${k}`).classList.toggle("hidden", k !== tab);
-      document.getElementById(`tab-${k}`).classList.toggle("active", k === tab);
+      document.getElementById(`panel-${k}`).classList.toggle("hidden", k!==tab);
+      document.getElementById(`tab-${k}`).classList.toggle("active", k===tab);
     }
     const q = document.getElementById("q").value;
     if(tab==="invoices") renderInvoices(q);
@@ -727,12 +678,12 @@
 
   function openPlansTab(planId){
     setActiveTab("plans");
-    setTimeout(() => {
-      const el = document.getElementById(`plan-${planId}`);
+    setTimeout(()=> {
+      const el=document.getElementById(`plan-${planId}`);
       if(el) el.scrollIntoView({behavior:"smooth", block:"center"});
-    }, 0);
+    },0);
   }
-  window.openPlansTab = openPlansTab;
+  window.openPlansTab=openPlansTab;
 
   function refreshCustomerHeader(){
     document.getElementById("activeCustomer").textContent = activeCustomerNo;
@@ -745,9 +696,17 @@
     setActiveTab(currentTab);
   }
 
+  // Querystring support
+  function getQueryParam(name){ return new URLSearchParams(window.location.search).get(name); }
+  function setQueryCustomer(customerNo){
+    const url = new URL(window.location.href);
+    url.searchParams.set("customer", customerNo);
+    history.replaceState({}, "", url.toString());
+  }
+
   function lookupCustomer(customerNo, updateUrl=true){
-    const err = document.getElementById("customerError");
-    err.textContent = "";
+    const err=document.getElementById("customerError");
+    err.textContent="";
     if(!loadCustomer(customerNo)){
       err.textContent = lang==="nl" ? "Klant niet gevonden." : "Customer not found.";
       return false;
@@ -760,28 +719,21 @@
   }
 
   // Events
-  document.getElementById("btnLookup").addEventListener("click", () => {
-    const input = (document.getElementById("customerNo").value || "").trim();
-    const err = document.getElementById("customerError");
-    err.textContent = "";
-    if(!input){
-      err.textContent = lang==="nl" ? "Vul een klantnummer in." : "Enter a customer number.";
-      return;
-    }
-    lookupCustomer(input, true);
+  document.getElementById("btnLookup").addEventListener("click", ()=>{
+    const v=(document.getElementById("customerNo").value||"").trim();
+    const err=document.getElementById("customerError");
+    err.textContent="";
+    if(!v){ err.textContent = lang==="nl" ? "Vul een klantnummer in." : "Enter a customer number."; return; }
+    lookupCustomer(v,true);
   });
-  document.getElementById("customerNo").addEventListener("keydown", (e) => {
-    if(e.key === "Enter") document.getElementById("btnLookup").click();
-  });
+  document.getElementById("customerNo").addEventListener("keydown", (e)=>{ if(e.key==="Enter") document.getElementById("btnLookup").click(); });
 
-  document.getElementById("q").addEventListener("input", (e) => setActiveTab(currentTab));
+  document.getElementById("q").addEventListener("input", ()=> setActiveTab(currentTab));
+  document.getElementById("tab-invoices").addEventListener("click", ()=> setActiveTab("invoices"));
+  document.getElementById("tab-payments").addEventListener("click", ()=> setActiveTab("payments"));
+  document.getElementById("tab-plans").addEventListener("click", ()=> setActiveTab("plans"));
+  document.getElementById("tab-credits").addEventListener("click", ()=> setActiveTab("credits"));
 
-  document.getElementById("tab-invoices").addEventListener("click", () => setActiveTab("invoices"));
-  document.getElementById("tab-payments").addEventListener("click", () => setActiveTab("payments"));
-  document.getElementById("tab-plans").addEventListener("click", () => setActiveTab("plans"));
-  document.getElementById("tab-credits").addEventListener("click", () => setActiveTab("credits"));
-
-  // Language toggle (minimal UI strings)
   function setLang(next){
     lang = next;
     localStorage.setItem("easy-ledger-lang", lang);
@@ -794,19 +746,19 @@
     document.getElementById("customerInfo").innerHTML = `${t().cust}: <b class="mono" id="activeCustomer">${activeCustomerNo}</b> · ${t().product}: <b id="activeProduct">${activeProduct}</b>`;
     renderAll();
   }
-  document.getElementById("lang-nl").addEventListener("click", () => setLang("nl"));
-  document.getElementById("lang-en").addEventListener("click", () => setLang("en"));
+  document.getElementById("lang-nl").addEventListener("click", ()=> setLang("nl"));
+  document.getElementById("lang-en").addEventListener("click", ()=> setLang("en"));
 
-  // Init: use querystring if present
+  // Init
   const qsCustomer = getQueryParam("customer");
   loadCustomer("12345678");
+  document.getElementById("customerNo").value = "12345678";
   setLang(lang);
 
   if(qsCustomer && customers[qsCustomer]){
-    lookupCustomer(qsCustomer, false);
+    lookupCustomer(qsCustomer,false);
   } else {
-    document.getElementById("customerNo").value = activeCustomerNo;
-    setQueryCustomer(activeCustomerNo);
+    setQueryCustomer("12345678");
     renderAll();
   }
 </script>
