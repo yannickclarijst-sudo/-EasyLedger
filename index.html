@@ -19,7 +19,6 @@
     .wrap{max-width:1200px;margin:24px auto;padding:0 16px;}
     .card{background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 1px 2px rgba(0,0,0,.10);}
     header{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;padding:16px 16px 8px;}
-    header h1{font-size:18px;margin:0;}
     .toolbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
     input[type="search"], input[type="text"]{
       padding:10px 12px;border:1px solid var(--line);border-radius:10px;min-width:220px;
@@ -50,6 +49,7 @@
     a{color:var(--blue);text-decoration:none;}
     a:hover{text-decoration:underline;}
     .muted{color:var(--muted);}
+
     .pill{
       display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;
       font-size:12px;font-weight:600;border:1px solid transparent;white-space:nowrap;
@@ -59,6 +59,7 @@
     .pill.processing{color:var(--amber); background:rgba(217,119,6,.12); border-color:rgba(217,119,6,.22);}
     .pill.paid{color:var(--green); background:rgba(22,163,74,.10); border-color:rgba(22,163,74,.18);}
     .pill.partial{color:var(--red); background:rgba(220,38,38,.10); border-color:rgba(220,38,38,.20);}
+
     .badge{
       display:inline-flex;align-items:center;gap:6px;
       padding:4px 8px;border-radius:999px;
@@ -67,10 +68,12 @@
       margin-left:8px;
       cursor:pointer;
     }
+
     details summary{cursor:pointer;color:var(--blue);font-size:13px;}
     .tx{ margin-top:8px;border:1px solid var(--line);border-radius:10px;overflow:hidden; }
     .tx table{width:100%;}
     .tx thead th{background:transparent;border-top:none;}
+
     .tabs{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
     .tabbtn{
       border:1px solid var(--line);background:transparent;color:var(--text);
@@ -86,6 +89,7 @@
     .docIcon{width:14px;height:14px;flex:0 0 auto;}
     .docIcon path{fill:currentColor;}
     .invId{color:var(--blue);}
+
     .toggleGroup{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
     .switch{display:inline-flex;align-items:center;gap:10px;color:var(--muted);font-size:13px;user-select:none;}
     .switch input{display:none;}
@@ -102,12 +106,14 @@
     html[data-theme="dark"] .track{background:rgba(148,163,184,.12);}
     html[data-theme="dark"] .thumb{background:#e5e7eb;}
     .switch input:checked + .track .thumb{left:23px;}
+
     .langbtn{
       border:1px solid var(--line);background:transparent;color:var(--text);
       padding:8px 10px;border-radius:10px;font-size:13px;cursor:pointer;
     }
     .langbtn.active{border-color:rgba(37,99,235,.35);box-shadow:0 0 0 3px rgba(37,99,235,.10);}
     html[data-theme="dark"] .langbtn.active{box-shadow:0 0 0 3px rgba(96,165,250,.18);}
+
     .customerBox{
       display:flex;gap:10px;align-items:center;flex-wrap:wrap;
       padding:0 16px 8px;
@@ -126,16 +132,50 @@
     .btn:hover{background:color-mix(in srgb, var(--card), #60a5fa 8%);}
     html[data-theme="dark"] .btn:hover{background:rgba(96,165,250,.12);}
     .error{color:var(--red);font-size:12px;}
+
+    /* Brand */
+    .brand{display:flex;align-items:center;gap:12px;}
+    .brandIcon{width:42px;height:42px;display:block;flex:0 0 auto;}
+    .brandName{font-weight:800;font-size:18px;letter-spacing:-.2px;color:var(--text);line-height:1;}
+    .brandSub{margin-top:3px;font-size:12px;color:var(--muted);}
+
+    /* Dunning tags */
+    .dunning{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;}
+    .tag{
+      display:inline-flex;align-items:center;gap:6px;
+      padding:4px 8px;border-radius:999px;
+      font-size:12px;font-weight:700;
+      color:var(--slate); background:color-mix(in srgb, var(--card), #fff 4%); border:1px solid var(--line);
+      white-space:nowrap;
+    }
+    html[data-theme="dark"] .tag{color:var(--text); background:rgba(148,163,184,.08);}
+    .tag.dunning-on{color:var(--red); background:rgba(220,38,38,.08); border-color:rgba(220,38,38,.18);}
+    .tag.dunning-off{color:var(--muted); background:color-mix(in srgb, var(--card), #fff 2%); border-color:var(--line);}
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="card">
       <header>
-        <div>
-          <h1>Easy Ledger</h1>
-          <div class="muted" style="font-size:13px;">Demo</div>
+        <div class="brand" aria-label="Easy Ledger">
+          <!-- Black icon with white EL bars -->
+          <svg class="brandIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Easy Ledger icon">
+            <rect x="2" y="2" width="60" height="60" rx="18" fill="#000"/>
+            <!-- E -->
+            <rect x="16" y="18" width="22" height="6" rx="3" fill="#fff"/>
+            <rect x="16" y="29" width="18" height="6" rx="3" fill="#fff"/>
+            <rect x="16" y="40" width="22" height="6" rx="3" fill="#fff"/>
+            <!-- L -->
+            <rect x="41" y="18" width="6" height="28" rx="3" fill="#fff"/>
+            <rect x="41" y="40" width="15" height="6" rx="3" fill="#fff"/>
+          </svg>
+
+          <div>
+            <div class="brandName">Easy Ledger</div>
+            <div class="brandSub muted">Demo</div>
+          </div>
         </div>
+
         <div class="toolbar">
           <div class="tabs" role="tablist" aria-label="Tabs">
             <button class="tabbtn active" id="tab-invoices" type="button">Facturen</button>
@@ -166,7 +206,7 @@
       </div>
 
       <div class="sub">
-        <div id="subMeta">Regels: N/A</div>
+        <div id="subMeta">Regels: N/A · Dunning: N/A</div>
         <div class="kpis">
           <div class="kpi"><span id="lblOpenTotal">Totaal openstaand</span><b id="openTotal">€ 0,00</b></div>
         </div>
@@ -182,6 +222,7 @@
               <th class="right" style="width:120px;" id="thAmount">Bedrag</th>
               <th class="right" style="width:140px;" id="thOpen">Openstaand</th>
               <th style="width:210px;" id="thStatus">Status</th>
+              <th style="width:240px;" id="thDunning">Dunning</th>
               <th id="thTx">Transacties</th>
             </tr>
           </thead>
@@ -257,90 +298,54 @@
   let lang = localStorage.getItem("easy-ledger-lang") || "nl";
   const txt = {
     nl: {
-      search:"Zoek…",
-      custPh:"Klantnummer (bijv. 12345678)",
-      lookup:"Zoek klant",
-      cust:"Klant",
-      product:"Product",
-      openTotal:"Totaal openstaand",
-      darkMode:"Donkere modus",
+      search:"Zoek…", custPh:"Klantnummer (bijv. 12345678)", lookup:"Zoek klant",
+      cust:"Klant", product:"Product", openTotal:"Totaal openstaand", darkMode:"Donkere modus",
 
-      tabInvoices:"Facturen",
-      tabPayments:"Betalingen",
-      tabPlans:"Betalingsregelingen",
-      tabCredits:"Credit/Debit",
-
-      thInv:"Factuur", thInvDate:"Factuurdatum", thDueDate:"Vervaldatum", thAmount:"Bedrag", thOpen:"Openstaand", thStatus:"Status", thTx:"Transacties",
+      tabInvoices:"Facturen", tabPayments:"Betalingen", tabPlans:"Betalingsregelingen", tabCredits:"Credit/Debit",
+      thInv:"Factuur", thInvDate:"Factuurdatum", thDueDate:"Vervaldatum", thAmount:"Bedrag", thOpen:"Openstaand", thStatus:"Status", thDunning:"Dunning", thTx:"Transacties",
       thPay:"Betaling", thPayDate:"Datum", thPayMethod:"Methode", thPayStatus:"Status", thPayAmount:"Bedrag", thPayLinked:"Gekoppeld aan facturen",
       thPlan:"Plan", thPlanInv:"Facturen", thPlanStatus:"Status", thPlanTotal:"Totaal", thPlanSched:"Termijnen & transacties",
       thCr:"Credit", thCrAdded:"Datum toegevoegd", thCrType:"Type", thCrAmount:"Bedrag", thCrStatus:"Status", thCrLinked:"Verrekend met / gepland op",
 
-      tx:"Transacties",
-      txNone:"Geen transacties.",
+      tx:"Transacties", txNone:"Geen transacties.",
       txHdrTx:"Transactie", txHdrDate:"Datum", txHdrType:"Type", txHdrAmount:"Bedrag", txHdrStatus:"Status",
 
-      openPdf:"Open PDF",
-      openBV:"Open BV",
+      openPdf:"Open PDF", openBV:"Open BV",
+      invoicePrefix:"Factuur", payPlan:"Betalingsregeling", installments:"Termijnen",
+      due:"Vervaldatum", method:"Methode",
 
-      invoicePrefix:"Factuur",
-      payPlan:"Betalingsregeling",
-      installments:"Termijnen",
-
-      due:"Vervaldatum",
-      method:"Methode",
-
-      notFound:"Klant niet gevonden.",
-      enterCust:"Vul een klantnummer in.",
-      linkedInvPrefix:"Factuur",
-
-      creditType:"Credit",
+      notFound:"Klant niet gevonden.", enterCust:"Vul een klantnummer in.", linkedInvPrefix:"Factuur",
+      creditType:"Credit", creditStatusApplied:"Verrekend",
 
       invStatus: {paid:"Betaald", processing:"In behandeling", partial:"Deels betaald", announced:"Aangekondigd"},
       payStatus: {Settled:"Verrekend", Pending:"In verwerking", Rejected:"Afgewezen", Paid:"Betaald", Scheduled:"Gepland"},
-      creditStatusApplied:"Verrekend"
+
+      dunningOn:"Aan", dunningOff:"Uit", dunningLevel:"Level"
     },
     en: {
-      search:"Search…",
-      custPh:"Customer number (e.g. 12345678)",
-      lookup:"Find customer",
-      cust:"Customer",
-      product:"Product",
-      openTotal:"Total outstanding",
-      darkMode:"Dark mode",
+      search:"Search…", custPh:"Customer number (e.g. 12345678)", lookup:"Find customer",
+      cust:"Customer", product:"Product", openTotal:"Total outstanding", darkMode:"Dark mode",
 
-      tabInvoices:"Invoices",
-      tabPayments:"Payments",
-      tabPlans:"Payment plans",
-      tabCredits:"Credit/Debit",
-
-      thInv:"Invoice", thInvDate:"Invoice date", thDueDate:"Due date", thAmount:"Amount", thOpen:"Outstanding", thStatus:"Status", thTx:"Transactions",
+      tabInvoices:"Invoices", tabPayments:"Payments", tabPlans:"Payment plans", tabCredits:"Credit/Debit",
+      thInv:"Invoice", thInvDate:"Invoice date", thDueDate:"Due date", thAmount:"Amount", thOpen:"Outstanding", thStatus:"Status", thDunning:"Dunning", thTx:"Transactions",
       thPay:"Payment", thPayDate:"Date", thPayMethod:"Method", thPayStatus:"Status", thPayAmount:"Amount", thPayLinked:"Linked invoices",
       thPlan:"Plan", thPlanInv:"Invoices", thPlanStatus:"Status", thPlanTotal:"Total", thPlanSched:"Installments & transactions",
       thCr:"Credit", thCrAdded:"Date added", thCrType:"Type", thCrAmount:"Amount", thCrStatus:"Status", thCrLinked:"Applied to / scheduled on",
 
-      tx:"Transactions",
-      txNone:"No transactions.",
+      tx:"Transactions", txNone:"No transactions.",
       txHdrTx:"Tx", txHdrDate:"Date", txHdrType:"Type", txHdrAmount:"Amount", txHdrStatus:"Status",
 
-      openPdf:"Open PDF",
-      openBV:"Open BV",
+      openPdf:"Open PDF", openBV:"Open BV",
+      invoicePrefix:"Invoice", payPlan:"Payment plan", installments:"Installments",
+      due:"Due date", method:"Method",
 
-      invoicePrefix:"Invoice",
-      payPlan:"Payment plan",
-      installments:"Installments",
-
-      due:"Due date",
-      method:"Method",
-
-      notFound:"Customer not found.",
-      enterCust:"Enter a customer number.",
-      linkedInvPrefix:"Invoice",
-
-      creditType:"Credit",
+      notFound:"Customer not found.", enterCust:"Enter a customer number.", linkedInvPrefix:"Invoice",
+      creditType:"Credit", creditStatusApplied:"Applied",
 
       invStatus: {paid:"Paid", processing:"Pending", partial:"Partially paid", announced:"Announced"},
       payStatus: {Settled:"Settled", Pending:"Pending", Rejected:"Rejected", Paid:"Paid", Scheduled:"Scheduled"},
-      creditStatusApplied:"Applied"
+
+      dunningOn:"On", dunningOff:"Off", dunningLevel:"Level"
     }
   };
   function t(){ return txt[lang]; }
@@ -376,7 +381,7 @@
   // Icons
   const pdfIconSvg = `
     <svg class="docIcon" viewBox="0 0 24 24" style="color:#ef4444" aria-hidden="true">
-      <path d="M6 2h9l5 5v15a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm8 1.5V8h4.5L14 3.5zM7 14h2.2c1.5 0 2.3.8 2.3 2s-.8 2-2.3 2H8.5v2H7v-6zm2.1 2.7c.6 0 1-.3 1-.7s-.4-.7-1-.7H8.5v1.4h.6zM12.2 14h2.1c1.9 0 3.2 1.2 3.2 3s-1.3 3-3.2 3h-2.1v-6zm2.1 4.5c1 0 1.7-.6 1.7-1.5s-.7-1.5-1.7-1.5h-.6v3h.6zM18.3 14H22v1.5h-2.2V16H22v1.5h-2.2V20h-1.5v-6z"/>
+      <path d="M6 2h9l5 5v15a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm8 1.5V8h4.5L14 3.5zM7 12h10v2H7v-2zm0 4h10v2H7v-2z"/>
     </svg>
   `;
   const invoiceIconSvg = `
@@ -430,13 +435,11 @@
     ]
   };
 
-  // Customers
   const customers = {
     "12345678": { customerNo:"12345678", product:"A", docMode:"pdf", ledger: baseLedger },
     "23456789": { customerNo:"23456789", product:"B", docMode:"openbv", ledger: baseLedger },
   };
 
-  // Active + working data
   let activeCustomerNo="12345678", activeProduct="A", docMode="pdf";
   let invoices=[], paymentPlans=[], credits=[], payments=[];
   function clone(o){ return JSON.parse(JSON.stringify(o)); }
@@ -458,14 +461,9 @@
     if(docMode === "openbv") return `https://openbv.example/invoice/${encodeURIComponent(invoiceId)}`;
     return `pdf/${invoiceId}.pdf`;
   }
-  function invoiceDocIcon(){
-    return (docMode === "openbv") ? invoiceIconSvg : pdfIconSvg;
-  }
-  function invoiceDocTitle(){
-    return (docMode === "openbv") ? t().openBV : t().openPdf;
-  }
+  function invoiceDocIcon(){ return (docMode === "openbv") ? invoiceIconSvg : pdfIconSvg; }
+  function invoiceDocTitle(){ return (docMode === "openbv") ? t().openBV : t().openPdf; }
 
-  // Querystring
   function getCustomerParam(){ return new URLSearchParams(window.location.search).get("customer"); }
   function setCustomerParam(customerNo){
     const url = new URL(window.location.href);
@@ -473,7 +471,6 @@
     history.replaceState({}, "", url.toString());
   }
 
-  // Ledger calculations
   function settledPayments(){ return payments.filter(p => p.status==="Settled"); }
   function pendingPayments(){ return payments.filter(p => p.status==="Pending"); }
 
@@ -544,12 +541,20 @@
     return {key:"announced", label: t().invStatus.announced};
   }
 
-  // Dunning: OFF everywhere for now
+  // Dunning: OFF everywhere for now (but shown in UI as Off + level 0)
   function dunningInfo(inv){
     return {on:false, level:0};
   }
+  function dunningCell(inv){
+    const d = dunningInfo(inv);
+    return `
+      <div class="dunning">
+        <span class="tag ${d.on ? "dunning-on" : "dunning-off"}">Dunning: ${d.on ? t().dunningOn : t().dunningOff}</span>
+        <span class="tag level">${t().dunningLevel}: ${d.level}</span>
+      </div>
+    `;
+  }
 
-  // Payments status pill (mapped to existing pill classes)
   function paymentStatusPill(status){
     const lbl = t().payStatus[status] || status;
     if(status==="Settled") return pill(lbl,"paid");
@@ -558,10 +563,8 @@
     return pill(lbl,"announced");
   }
 
-  // Transactions table for invoices + plans
   function txTableForInvoice(invoiceId){
     const txs=[];
-
     for(const p of payments){
       for(const a of (p.allocations||[])){
         if(a.invoiceId!==invoiceId) continue;
@@ -577,18 +580,11 @@
     }
     for(const a of planPaidAllocations()){
       if(a.invoiceId!==invoiceId) continue;
-      txs.push({
-        doc:a.doc,
-        date:a.date,
-        type: `${t().payPlan} (${a.planId})`,
-        amount:-Math.abs(a.amount),
-        status:"Paid"
-      });
+      txs.push({doc:a.doc,date:a.date,type:`${t().payPlan} (${a.planId})`,amount:-Math.abs(a.amount),status:"Paid"});
     }
 
     if(!txs.length) return `<div class="muted">${t().txNone}</div>`;
     txs.sort((a,b)=>b.date.localeCompare(a.date));
-
     return `
       <div class="tx">
         <table>
@@ -621,7 +617,6 @@
     `;
   }
 
-  // Render
   let currentTab="invoices";
   function sortInvoicesNewestFirst(list){ return [...list].sort((a,b)=>b.docDate.localeCompare(a.docDate)); }
 
@@ -651,6 +646,7 @@
           <td class="right mono amount">${money(inv.amount)}</td>
           <td class="right mono amount">${money(open)}</td>
           <td>${pill(st.label, st.key)}</td>
+          <td>${dunningCell(inv)}</td>
           <td>
             <details>
               <summary>${t().tx}</summary>
@@ -661,8 +657,10 @@
       `;
     }).join("");
     document.getElementById("openTotal").textContent = money(computeOpenTotal());
+
+    const onCount = invoices.filter(inv => dunningInfo(inv).on).length;
     document.getElementById("subMeta").textContent =
-      (lang==="nl" ? `Regels: ${list.length}` : `Rows: ${list.length}`);
+      (lang==="nl" ? `Regels: ${list.length} · Dunning: ${onCount} aan` : `Rows: ${list.length} · Dunning: ${onCount} on`);
   }
 
   function renderPayments(filterText=""){
@@ -692,8 +690,7 @@
       `;
     }).join("");
     document.getElementById("openTotal").textContent = money(computeOpenTotal());
-    document.getElementById("subMeta").textContent =
-      (lang==="nl" ? `Regels: ${filtered.length}` : `Rows: ${filtered.length}`);
+    document.getElementById("subMeta").textContent = (lang==="nl" ? `Regels: ${filtered.length}` : `Rows: ${filtered.length}`);
   }
 
   function scheduleTable(plan){
@@ -752,8 +749,7 @@
       `;
     }).join("");
     document.getElementById("openTotal").textContent = money(computeOpenTotal());
-    document.getElementById("subMeta").textContent =
-      (lang==="nl" ? `Regels: ${filtered.length}` : `Rows: ${filtered.length}`);
+    document.getElementById("subMeta").textContent = (lang==="nl" ? `Regels: ${filtered.length}` : `Rows: ${filtered.length}`);
   }
 
   function renderCredits(filterText=""){
@@ -775,8 +771,7 @@
       `;
     }).join("");
     document.getElementById("openTotal").textContent = money(computeOpenTotal());
-    document.getElementById("subMeta").textContent =
-      (lang==="nl" ? `Regels: ${filtered.length}` : `Rows: ${filtered.length}`);
+    document.getElementById("subMeta").textContent = (lang==="nl" ? `Regels: ${filtered.length}` : `Rows: ${filtered.length}`);
   }
 
   function setActiveTab(tab){
@@ -806,14 +801,12 @@
     document.getElementById("activeCustomer").textContent = activeCustomerNo;
     document.getElementById("activeProduct").textContent = activeProduct;
   }
-
   function renderAll(){
     refreshCustomerHeader();
     document.getElementById("openTotal").textContent = money(computeOpenTotal());
     setActiveTab(currentTab);
   }
 
-  // customer lookup + querystring
   function lookupCustomer(customerNo, updateUrl=true){
     const err=document.getElementById("customerError");
     err.textContent="";
@@ -828,7 +821,6 @@
     return true;
   }
 
-  // Events
   document.getElementById("btnLookup").addEventListener("click", ()=>{
     const v=(document.getElementById("customerNo").value||"").trim();
     const err=document.getElementById("customerError");
@@ -856,19 +848,18 @@
     document.getElementById("lblOpenTotal").textContent = t().openTotal;
     document.getElementById("lblDarkMode").textContent = t().darkMode;
 
-    // Tabs
     document.getElementById("tab-invoices").textContent = t().tabInvoices;
     document.getElementById("tab-payments").textContent = t().tabPayments;
     document.getElementById("tab-plans").textContent = t().tabPlans;
     document.getElementById("tab-credits").textContent = t().tabCredits;
 
-    // Table headers
     document.getElementById("thInv").textContent = t().thInv;
     document.getElementById("thInvDate").textContent = t().thInvDate;
     document.getElementById("thDueDate").textContent = t().thDueDate;
     document.getElementById("thAmount").textContent = t().thAmount;
     document.getElementById("thOpen").textContent = t().thOpen;
     document.getElementById("thStatus").textContent = t().thStatus;
+    document.getElementById("thDunning").textContent = t().thDunning;
     document.getElementById("thTx").textContent = t().thTx;
 
     document.getElementById("thPay").textContent = t().thPay;
@@ -891,7 +882,6 @@
     document.getElementById("thCrStatus").textContent = t().thCrStatus;
     document.getElementById("thCrLinked").textContent = t().thCrLinked;
 
-    // Customer summary line
     document.getElementById("customerInfo").innerHTML =
       `${t().cust}: <b class="mono" id="activeCustomer">${activeCustomerNo}</b> · ${t().product}: <b id="activeProduct">${activeProduct}</b>`;
 
